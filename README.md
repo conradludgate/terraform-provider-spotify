@@ -166,7 +166,7 @@ data "spotify_saved_songs" "my_songs" {
 resource "random_shuffle" "shuffle_daily" {
   input = data.spotify_saved_songs.my_songs.tracks
   result_count = 100
-  seed = formatdate("YYYY-MM-DD", "2018-01-02T23:12:01-08:00")
+  seed = formatdate("YYYY-MM-DD", timestamp())
 }
 
 resource "spotify_playlist" "shuffled_playlist" {
