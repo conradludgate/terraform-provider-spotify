@@ -16,7 +16,6 @@ This is a terraform provider for managing your spotify playlists.
 
 To install the provider, run
 ```sh
-cd tf
 make install
 ```
 This will build the binary and install it into the terraform plugins dir.
@@ -90,7 +89,7 @@ Manage the tracks saved in the user's 'Liked Songs'
 *   [user-library-modify](https://developer.spotify.com/documentation/general/guides/scopes/#user-library-modify) - To save/remove tracks from the library
 
 **Variables:**
-*   **tracks**: *list[string]?* - List of the tracks IDs in the playlist
+*   **tracks**: *list[string]* - List of the tracks IDs in the playlist
 
 #### spotify_playlist
 
@@ -106,7 +105,7 @@ Manage the details and tracks in a playlist
 *   **name**: *string* - Name of the playlist
 *   **description**: *string?* - Description of the playlist
 *   **public**: *bool?* - Whether the playlist is public (default `true`)
-*   **tracks**: *list[string]?* - List of the tracks IDs in the playlist
+*   **tracks**: *list[string]* - List of the tracks IDs in the playlist
 
 **Computed:**
 *   **id**: *string* - Playlist ID
@@ -121,8 +120,8 @@ Search for a track
 None
 
 **Paramaters:**
-*   **name**: *string?* - Name of the track
-*   **artists**: *list[string]?* - List of the artists
+*   **name**: *string* - Name of the track
+*   **artists**: *list[string]* - List of the artists
 
 **Results:**
 *   **id**: *string* - ID of the first track found

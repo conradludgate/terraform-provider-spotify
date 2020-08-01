@@ -22,6 +22,6 @@ If everything succeeds, the variable `SPOTIFY_ACCESS_TOKEN` will be set with the
 
 The default values are for [terraform-provider-spotify](https://github.com/conradludgate/terraform-provider-spotify) but all the values are configurable.
 
-*   **SPOTIFY_CLIENT_ID** - Client ID of a spotify application
+*   **SPOTIFY_CLIENT_ID** - Client ID of the spotify application
 *   **SPOTIFY_SCOPES** - Scopes required, comma separated (see: https://developer.spotify.com/documentation/general/guides/scopes)
 *   **SPOTIFY_REDIRECT_URI** - Redirect URI for the spotify application
