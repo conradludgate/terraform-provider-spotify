@@ -4,7 +4,7 @@ Simple program to authorize and return a spotify access token via [implicit gran
 
 ## Installation
 
-`go install github.com/conradludgate/terraform-provider-spotify/spotify_auth`
+`go get github.com/conradludgate/terraform-provider-spotify/spotify_auth`
 
 ## Usage
 
