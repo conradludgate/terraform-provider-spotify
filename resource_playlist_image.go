@@ -19,11 +19,11 @@ func resourcePlaylistImage() *schema.Resource {
 		Delete: resourcePlaylistImageDelete,
 
 		Schema: map[string]*schema.Schema{
-			"playlist_id": &schema.Schema{
+			"playlist_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"image_data": &schema.Schema{
+			"image_data": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "base64 encoded JPEG image",

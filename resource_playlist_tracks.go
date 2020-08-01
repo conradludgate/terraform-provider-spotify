@@ -40,7 +40,7 @@ func resourcePlaylistTracksRead(d *schema.ResourceData, m interface{}) error {
 
 	playlistID := d.Id()
 
-	trackIDs := schema.NewSet(schema.HashString, nil)
+	var trackIDs []string
 
 	tracks, err := client.GetPlaylistTracks(spotify.ID(playlistID))
 	if err != nil {
@@ -48,7 +48,7 @@ func resourcePlaylistTracksRead(d *schema.ResourceData, m interface{}) error {
 	}
 	for err == nil {
 		for _, track := range tracks.Tracks {
-			trackIDs.Add(string(track.Track.ID))
+			trackIDs = append(trackIDs, string(track.Track.ID))
 		}
 		err = client.NextPage(tracks)
 	}
@@ -58,6 +58,11 @@ func resourcePlaylistTracksRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
+// Currently just replaces the entire playlists tracks with the new ones
+// Would be better to use snapshot_id, create a diff
+// work out where to insert and delete tracks.
+// Might be more efficient depending on the diff, and would be safer as to not
+// delete a users entire playlist if an api call fails half way
 func resourcePlaylistTracksUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
 
@@ -66,47 +71,34 @@ func resourcePlaylistTracksUpdate(d *schema.ResourceData, m interface{}) error {
 	playlistID := d.Id()
 
 	if d.HasChange("tracks") {
-		old, new := d.GetChange("tracks")
-		oldSet := old.(*schema.Set)
-		newSet := new.(*schema.Set)
-		add := newSet.Difference(oldSet).List()
-		sub := oldSet.Difference(newSet).List()
+		tracks := d.Get("tracks").([]interface{})
 
-		addTrackIDs := make([]spotify.ID, len(add))
-		for i, track := range add {
-			addTrackIDs[i] = spotify.ID(track.(string))
+		trackIDs := make([]spotify.ID, len(tracks))
+		for i, track := range tracks {
+			trackIDs[i] = spotify.ID(track.(string))
 		}
 
-		subTrackIDs := make([]spotify.ID, len(sub))
-		for i, track := range sub {
-			subTrackIDs[i] = spotify.ID(track.(string))
-		}
-
-		for i := 0; i < len(add)/100; i++ {
-			_, err := client.AddTracksToPlaylist(spotify.ID(playlistID), addTrackIDs[100*i:100*i+100]...)
-			if err != nil {
-				return fmt.Errorf("AddTracksToPlaylist: %w", err)
+		if len(tracks) <= 100 {
+			if err := client.ReplacePlaylistTracks(spotify.ID(playlistID), trackIDs...); err != nil {
+				return fmt.Errorf("ReplacePlaylistTracks: %w", err)
 			}
-		}
-
-		if len(add)%100 != 0 {
-			_, err := client.AddTracksToPlaylist(spotify.ID(playlistID), addTrackIDs[100*(len(add)/100):]...)
-			if err != nil {
-				return fmt.Errorf("AddTracksToPlaylist: %w", err)
+		} else {
+			if err := client.ReplacePlaylistTracks(spotify.ID(playlistID), trackIDs[:100]...); err != nil {
+				return fmt.Errorf("ReplacePlaylistTracks: %w", err)
 			}
-		}
 
-		for i := 0; i < len(sub)/100; i++ {
-			_, err := client.RemoveTracksFromPlaylist(spotify.ID(playlistID), subTrackIDs[100*i:100*i+100]...)
-			if err != nil {
-				return fmt.Errorf("RemoveTracksFromPlaylist: %w", err)
+			for i := 1; i < len(tracks)/100; i++ {
+				_, err := client.AddTracksToPlaylist(spotify.ID(playlistID), trackIDs[100*i:100*i+100]...)
+				if err != nil {
+					return fmt.Errorf("AddTracksToPlaylist: %w", err)
+				}
 			}
-		}
 
-		if len(sub)%100 != 0 {
-			_, err := client.RemoveTracksFromPlaylist(spotify.ID(playlistID), subTrackIDs[100*(len(sub)/100):]...)
-			if err != nil {
-				return fmt.Errorf("RemoveTracksFromPlaylist: %w", err)
+			if len(tracks)%100 != 0 {
+				_, err := client.AddTracksToPlaylist(spotify.ID(playlistID), trackIDs[100*(len(tracks)/100):]...)
+				if err != nil {
+					return fmt.Errorf("AddTracksToPlaylist: %w", err)
+				}
 			}
 		}
 	}
@@ -118,5 +110,12 @@ func resourcePlaylistTracksUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourcePlaylistTracksDelete(d *schema.ResourceData, m interface{}) error {
+	client := m.(*spotify.Client)
+
+	playlistID := d.Id()
+	if err := client.ReplacePlaylistTracks(spotify.ID(playlistID)); err != nil {
+		return fmt.Errorf("AddTracksToPlaylist: %w", err)
+	}
+
 	return nil
 }

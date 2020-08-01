@@ -15,29 +15,28 @@ func resourcePlaylist() *schema.Resource {
 		Delete: resourcePlaylistDelete,
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"public": &schema.Schema{
+			"public": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			// "collaborative": &schema.Schema{
-			// 	Type:     schema.TypeBool,
-			// 	Optional: true,
-			// },
 			"tracks": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
 			},
+			// "snapshot_id": {
+			// 	Type:     schema.TypeString,
+			// 	Computed: true,
+			// },
 		},
 	}
 }
@@ -59,6 +58,8 @@ func resourcePlaylistCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("CreatePlaylist: %w", err)
 	}
+
+	// d.Set("snapshot_id", playlist.SnapshotID)
 
 	d.SetId(string(playlist.ID))
 
@@ -108,5 +109,5 @@ func resourcePlaylistUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourcePlaylistDelete(d *schema.ResourceData, m interface{}) error {
-	return nil
+	return resourcePlaylistTracksDelete(d, m)
 }

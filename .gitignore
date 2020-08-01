@@ -1,3 +1,4 @@
 *.env
 *.tfstate*
 *.terraform/
+build/

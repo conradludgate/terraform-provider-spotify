@@ -6,6 +6,7 @@ resource "spotify_playlist" "playlist" {
     tracks = [
         data.spotify_search_track.overkill.id,
         data.spotify_search_track.blackwater.id,
+        data.spotify_search_track.overkill.id,
     ]
 }
 
