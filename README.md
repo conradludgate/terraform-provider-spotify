@@ -26,7 +26,7 @@ This will build the binary and install it into the terraform plugins dir.
 ## How to use
 
 To run `terraform plan` or `terraform apply`, you must have a valid access token.
-See [spotify_auth](/tree/main/spotify_auth) for information about how to get an access token.
+See [spotify_auth](/spotify_auth) for information about how to get an access token.
 
 The provider will look for access tokens in the environment variable `SPOTIFY_ACCESS_TOKEN`.
 The access token must be valid for the following scopes:
