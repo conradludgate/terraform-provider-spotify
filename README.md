@@ -11,6 +11,9 @@ This is a terraform provider for managing your spotify playlists.
       - [spotify_playlist](#spotify_playlist)
     - [Data sources](#data-sources)
       - [spotify_search_track](#spotify_search_track)
+  - [Todo](#todo)
+    - [Playlist diff](#playlist-diff)
+    - [More Datasources](#more-datasources)
 
 ## Installation
 
@@ -89,7 +92,7 @@ Manage the tracks saved in the user's 'Liked Songs'
 *   [user-library-modify](https://developer.spotify.com/documentation/general/guides/scopes/#user-library-modify) - To save/remove tracks from the library
 
 **Variables:**
-*   **tracks**: *list[string]* - List of the tracks IDs in the playlist
+*   **tracks**: *set[string]* - Set of the tracks IDs in the playlist
 
 #### spotify_playlist
 
@@ -125,3 +128,52 @@ None
 
 **Results:**
 *   **id**: *string* - ID of the first track found
+
+
+## Todo
+
+### Playlist diff
+Currently, the playlists tracks don't perform a diff,
+they instead just replace all the tracks in the playlist with the new set.
+This is fine for playlists with less than a few hundred songs,
+But for larger playlists, adding a single song will cause several large API requests.
+
+For efficiency, a diff of the old and new track list should be calculated.
+The exact number of API calls can be known before starting,
+choosing the lesser will most likely be the better option.
+
+### More Datasources
+For my personal uses, I would like to have my 'Liked Songs' as a data source,
+and not something I manage personally.
+
+I have 3000 songs saved,
+I could write a script to convert them into a terraform file,
+but keeping it synced will be a nightmare.
+
+So instead, I want it as a data source I can use in other terraform resources.
+
+For example, a way to get a random playlist made out of my liked songs
+
+```tf
+provider "random_shuffle" {
+    version = "2.3.0"
+}
+
+data "spotify_saved_songs" "my_songs" {
+
+}
+
+resource "random_shuffle" "shuffle_daily" {
+  input = data.spotify_saved_songs.my_songs.tracks
+  result_count = 100
+  seed = formatdate("YYYY-MM-DD", "2018-01-02T23:12:01-08:00")
+}
+
+resource "spotify_playlist" "shuffled_playlist" {
+    name = "Daily shuffle mix"
+    description = "Check back daily for a new awesome mix of songs"
+    public = true
+
+    tracks = random_shuffle.shuffle_daily
+}
+```
