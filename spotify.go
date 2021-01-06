@@ -11,14 +11,8 @@ import (
 	spotifyOauth "golang.org/x/oauth2/spotify"
 )
 
-var spotifyClient *spotify.Client
-
 // ClientConfigurer for spotify API access
 func ClientConfigurer(d *schema.ResourceData) (interface{}, error) {
-	if spotifyClient != nil {
-		return spotifyClient, nil
-	}
-
 	authCode := d.Get("auth_code").(string)
 	clientID := d.Get("client_id").(string)
 	redirectURI := d.Get("redirect_uri").(string)
@@ -43,8 +37,7 @@ func ClientConfigurer(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	client := spotify.NewClient(cnf.Client(ctx, token))
-	spotifyClient = &client
-	return spotifyClient, nil
+	return &client, nil
 }
 
 type transport struct {

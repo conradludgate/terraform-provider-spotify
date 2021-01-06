@@ -16,12 +16,14 @@ func Provider() *schema.Provider {
 			},
 			"client_id": {
 				Type:         schema.TypeString,
+				Optional:     true,
 				RequiredWith: []string{"redirect_uri", "client_secret"},
 				Default:      "956aed6fce0c49ebb0eb1d050d9223ed",
 				Description:  "The client ID used to exchange the auth code into an access token",
 			},
 			"redirect_uri": {
 				Type:         schema.TypeString,
+				Optional:     true,
 				RequiredWith: []string{"client_id", "client_secret"},
 				Default:      "http://localhost:27228/spotify_callback",
 				Description:  "The URI that spotify redirects to when authorizing and creating the auth_code",

@@ -48,7 +48,7 @@ variable "spotify_code_verifier" {
   type = string
 }
 
-spotify {
+provider "spotify" {
   auth_code     = var.spotify_auth_code
   code_verifier = var.spotify_code_verifier
 }
