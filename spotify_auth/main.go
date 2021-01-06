@@ -1,92 +1,125 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
+	"log"
+	"math/big"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 )
 
+var (
+	clientID = "956aed6fce0c49ebb0eb1d050d9223ed"
+	scopes   = []string{
+		"user-read-email",
+		"user-read-private",
+		// "playlist-read-collaborative",
+		"playlist-read-private",
+		"playlist-modify-private",
+		"playlist-modify-public",
+		"user-library-read",
+		"user-library-modify",
+		// "ugc-image-upload",
+	}
+	redirectURI = "http://localhost:27228/spotify_callback"
+)
+
 func main() {
-	clientID := os.Getenv("SPOTIFY_CLIENT_ID")
-	if clientID == "" {
-		// default for terraform-provider-spotify
-		clientID = "956aed6fce0c49ebb0eb1d050d9223ed"
-	}
+	codeVerifier := randString("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-~", 128)
+	hash := sha256.Sum256([]byte(codeVerifier))
+	codeChallenge := base64.URLEncoding.EncodeToString(hash[0:32])
 
-	scopes := strings.Split(os.Getenv("SPOTIFY_SCOPES"), ",")
-	if len(scopes) == 0 {
-		// default for terraform-provider-spotify
-		scopes = []string{
-			"user-read-email",
-			"user-read-private",
-			// "playlist-read-collaborative",
-			"playlist-read-private",
-			"playlist-modify-private",
-			"playlist-modify-public",
-			"user-library-read",
-			"user-library-modify",
-			// "ugc-image-upload",
-		}
-	}
-
-	redirectURI := os.Getenv("SPOTIFY_REDIRECT_URI")
-	if redirectURI == "" {
-		// default for terraform-provider-spotify
-		redirectURI = "http://localhost:27228/spotify_callback"
-	}
-
-	accessToken, expiresIn, err := auth(clientID, scopes, redirectURI)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "could not authenticate.", err.Error())
-		os.Exit(1)
-	}
-
-	fmt.Fprintln(os.Stderr, "Authenticated successfully. Token expires in", expiresIn.String())
-
-	fmt.Printf("export SPOTIFY_ACCESS_TOKEN=%s\n", accessToken)
-}
-
-func auth(clientID string, scopes []string, redirectURI string) (string, time.Duration, error) {
 	state := uuid.New().String()
 
 	authURL, err := url.Parse("https://accounts.spotify.com/authorize")
 	if err != nil {
-		return "", 0, fmt.Errorf("could not create auth url: %w", err)
+		log.Fatalf("could not create auth url: %s\n", err)
 	}
 	query := url.Values{}
 	query.Set("client_id", clientID)
-	query.Set("response_type", "token")
+	query.Set("response_type", "code")
 	query.Set("redirect_uri", redirectURI)
+	query.Set("code_challenge", codeChallenge)
+	query.Set("code_challenge_method", "S256")
 	query.Set("state", state)
 	query.Set("scope", strings.Join(scopes, " "))
 	authURL.RawQuery = query.Encode()
 
-	fmt.Fprintln(os.Stderr, "Open this page in your browser to authenticate with spotify.")
-	fmt.Fprintln(os.Stderr, authURL)
-	fmt.Fprintln(os.Stderr, "Once you authenticate, copy the url and paste it here:")
+	if BrowserOpen(authURL.String()) {
+		handler := http.NewServeMux()
+		server := http.Server{
+			Addr:    ":27228",
+			Handler: handler,
+		}
 
-	var returnURLString string
-	fmt.Scanln(&returnURLString)
-	returnURL, err := url.Parse(returnURLString)
-	if err != nil {
-		return "", 0, fmt.Errorf("provided return url was not valid: %w", err)
+		handler.HandleFunc("/spotify_callback", func(w http.ResponseWriter, r *http.Request) {
+			if r.FormValue("error") != "" {
+				log.Fatalf("There was an error from spotify: %s\n", r.FormValue("error"))
+			}
+
+			if r.FormValue("state") != state {
+				log.Fatalf("state value was not valid: %s\n", err)
+			}
+
+			authCode := r.FormValue("code")
+
+			fmt.Printf("successfully retrieved authCode:\n\n%s\n\ncode verifier: %s\n", authCode, codeVerifier)
+
+			os.Exit(0)
+		})
+
+		if err := server.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	} else {
+		fmt.Println("Open this page in your browser to authenticate with spotify.")
+		fmt.Println()
+		fmt.Println(authURL)
+		fmt.Println()
+		fmt.Println("Once you authenticate, copy the url and paste it here:")
+		fmt.Println()
+
+		var returnURLString string
+		fmt.Scanln(&returnURLString)
+		returnURL, err := url.Parse(returnURLString)
+		if err != nil {
+			log.Fatalf("provided url was not valid: %s\n", err)
+		}
+
+		if returnURL.Query().Get("error") != "" {
+			log.Fatalf("There was an error from spotify: %s\n", returnURL.Query().Get("error"))
+		}
+
+		if returnURL.Query().Get("state") != state {
+			log.Fatalf("state value was not valid: %s\n", err)
+		}
+
+		authCode := returnURL.Query().Get("code")
+
+		fmt.Println()
+		fmt.Println()
+		fmt.Printf("successfully retrieved authCode:\n\n%s\n\ncode verifier: %s\n", authCode, codeVerifier)
 	}
-	data, err := url.ParseQuery(returnURL.Fragment)
-	if err != nil {
-		return "", 0, fmt.Errorf("provided return url was not valid: %w", err)
-	}
-	if data.Get("state") != state {
-		return "", 0, fmt.Errorf("invalid state found in url")
+}
+
+func randString(charSet string, length int) string {
+	max := big.NewInt(int64(len(charSet)))
+	output := make([]byte, 0, length)
+	for i := 0; i < length; i++ {
+		n, err := rand.Int(rand.Reader, max)
+		if err != nil {
+			log.Fatalf("Error creating random string: %s\n", err)
+		}
+
+		output = append(output, charSet[int(n.Int64())])
 	}
 
-	expiresIn, err := time.ParseDuration(data.Get("expires_in") + "s")
-	if err != nil {
-		return "", 0, fmt.Errorf("could not parse expires_in value")
-	}
-
-	return data.Get("access_token"), expiresIn, nil
+	return string(output)
 }

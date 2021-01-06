@@ -1,41 +1,48 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
+	spotifyOauth "golang.org/x/oauth2/spotify"
 )
 
 var spotifyClient *spotify.Client
 
 // ClientConfigurer for spotify API access
-func ClientConfigurer(_ *schema.ResourceData) (interface{}, error) {
+func ClientConfigurer(d *schema.ResourceData) (interface{}, error) {
 	if spotifyClient != nil {
 		return spotifyClient, nil
 	}
 
-	accessToken := os.Getenv("SPOTIFY_ACCESS_TOKEN")
-	if accessToken == "" {
-		return nil, fmt.Errorf("SPOTIFY_ACCESS_TOKEN must be set with a valid access token")
+	authCode := d.Get("auth_code").(string)
+	clientID := d.Get("client_id").(string)
+	redirectURI := d.Get("redirect_uri").(string)
+
+	ctx := context.Background()
+	cnf := oauth2.Config{
+		ClientID:    clientID,
+		Endpoint:    spotifyOauth.Endpoint,
+		RedirectURL: redirectURI,
+	}
+	options := []oauth2.AuthCodeOption{}
+
+	if codeVerifier, ok := d.GetOk("code_verifier"); ok {
+		options = append(options, oauth2.SetAuthURLParam("code_verifier", codeVerifier.(string)))
+	} else if clientSecret, ok := d.GetOk("client_secret"); ok {
+		cnf.ClientSecret = clientSecret.(string)
 	}
 
-	token := &oauth2.Token{
-		AccessToken: accessToken,
-		TokenType:   "Bearer",
+	token, err := cnf.Exchange(ctx, authCode, options...)
+	if err != nil {
+		return nil, fmt.Errorf("Could not exchange auth code: %w", err)
 	}
 
-	httpClient := &http.Client{
-		Transport: transport{
-			token,
-			&http.Client{},
-		},
-	}
-
-	client := spotify.NewClient(httpClient)
+	client := spotify.NewClient(cnf.Client(ctx, token))
 	spotifyClient = &client
 	return spotifyClient, nil
 }

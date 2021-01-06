@@ -19,13 +19,13 @@ This is a terraform provider for managing your spotify playlists.
 
 Add
 
-The following to your `main.tf` file
+The following to your terraform configuration
 
-```
+```tf
 terraform {
   required_providers {
     spotify = {
-      version = "~> 0.1.1"
+      version = "~> 0.1.2"
       source  = "conradludgate/spotify"
     }
   }
@@ -34,10 +34,26 @@ terraform {
 
 ## How to use
 
-To run `terraform plan` or `terraform apply`, you must have a valid access token.
-See [spotify_auth](/spotify_auth) for information about how to get an access token.
+To run `terraform plan` or `terraform apply`, you must have a valid auth code.
+See [spotify_auth](/spotify_auth) for information about how to get an auth code and code verifier values.
 
-The provider will look for access tokens in the environment variable `SPOTIFY_ACCESS_TOKEN`.
+Set the access token with the following configuration
+
+```tf
+variable "spotify_auth_code" {
+  type = string
+}
+
+variable "spotify_code_verifier" {
+  type = string
+}
+
+spotify {
+  auth_code     = var.spotify_auth_code
+  code_verifier = var.spotify_code_verifier
+}
+```
+
 The access token must be valid for the following scopes:
 *   user-read-email
 *   user-read-private

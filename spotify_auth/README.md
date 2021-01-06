@@ -1,27 +1,27 @@
 # spotify_auth
 
-Simple program to authorize and return a spotify access token via [implicit grant](https://developer.spotify.com/documentation/general/guides/authorization-guide/#implicit-grant-flow).
+Simple program to return a spotify auth code via [Authorization Code Flow with Proof Key for Code Exchange](https://developer.spotify.com/documentation/general/guides/authorization-guide/#authorization-code-flow-with-proof-key-for-code-exchange-pkce).
 
 ## Installation
 
-`go get github.com/conradludgate/terraform-provider-spotify/spotify_auth`
+`go get -u github.com/conradludgate/terraform-provider-spotify/spotify_auth`
 
 ## Usage
 
-Run
-```sh
-spotify_auth | source /dev/stdin
-```
-And click the link provided.
-Login to spotify and authorize the application.
-Once spotify redirects, copy the URL and paste it into the terminal.
+Run `spotify_auth`.
 
-If everything succeeds, the variable `SPOTIFY_ACCESS_TOKEN` will be set with the access token granted by spotify.
+If the program is able to open a browser tab
 
-## Configuration
+1)  find the newly created tab
+2)  authorize the application
+3)  Close the tab and refer back to the terminal
+4)  Take note of the returned `auth code` and `code verifier`
 
-The default values are for [terraform-provider-spotify](https://github.com/conradludgate/terraform-provider-spotify) but all the values are configurable.
+Otherwise
 
-*   **SPOTIFY_CLIENT_ID** - Client ID of the spotify application
-*   **SPOTIFY_SCOPES** - Scopes required, comma separated (see: https://developer.spotify.com/documentation/general/guides/scopes)
-*   **SPOTIFY_REDIRECT_URI** - Redirect URI for the spotify application
+1)  Copy the URL presented
+2)  Open the URL in a browser
+3)  authorize the application
+4)  Copy the URL of the redirect and refer back to the terminal
+5)  Paste the URL into the terminal
+6)  Take note of the returned `auth code` and `code verifier`

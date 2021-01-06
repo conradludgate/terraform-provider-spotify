@@ -14,24 +14,30 @@ func resourcePlaylist() *schema.Resource {
 		Update: resourcePlaylistUpdate,
 		Delete: resourcePlaylistDelete,
 
+		Description: "Resource to manage a spotify playlist.",
+
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of the resulting playlist",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The description of the resulting playlist",
 			},
 			"public": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Whether the playlist can be accessed publically",
 			},
 			"tracks": {
-				Type:     schema.TypeList,
-				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Required:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "A list of tracks for the playlist to contain",
 			},
 			// "snapshot_id": {
 			// 	Type:     schema.TypeString,
