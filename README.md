@@ -17,11 +17,20 @@ This is a terraform provider for managing your spotify playlists.
 
 ## Installation
 
-To install the provider, run
-```sh
-make install
+Add
+
+The following to your `main.tf` file
+
 ```
-This will build the binary and install it into the terraform plugins dir.
+terraform {
+  required_providers {
+    spotify = {
+      version = "~> 0.1.1"
+      source  = "conradludgate/spotify"
+    }
+  }
+}
+```
 
 ## How to use
 
