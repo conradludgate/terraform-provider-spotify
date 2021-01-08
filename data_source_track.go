@@ -1,66 +1,82 @@
 package main
 
 import (
-	"fmt"
+	"errors"
+	"net/url"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/zmb3/spotify"
 )
 
-func dataSourceSearchTrack() *schema.Resource {
+func dataSourceTrack() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceSearchTrackRead,
+		Read: dataSourceTrackRead,
 
 		Schema: map[string]*schema.Schema{
+			"spotify_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				AtLeastOneOf: []string{"spotify_id", "url"},
+				Description:  "Spotify ID of the track",
+			},
+			"url": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				AtLeastOneOf: []string{"spotify_id", "url"},
+				Description:  "Spotify URL of the track",
+			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Name of the track",
 			},
 			"artists": {
-				Type:     schema.TypeList,
-				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The spotify IDs of the artists",
+			},
+			"album": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The spotify ID of the album",
 			},
 		},
 	}
 }
 
-func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceTrackRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
 
-	artists := d.Get("artists").([]interface{})
-	names := make([]string, len(artists))
-	for i, v := range artists {
-		names[i] = v.(string)
+	var id spotify.ID
+	if u, ok := d.GetOk("url"); ok {
+		u, err := url.Parse(u.(string))
+		if err != nil {
+			return err
+		}
+		if !strings.HasPrefix(u.Path, "/track/") {
+			return errors.New("URL did not point to a spotify track")
+		}
+		id = spotify.ID(strings.TrimPrefix(u.Path, "/track/"))
+	} else {
+		id = spotify.ID(d.Get("spotify_id").(string))
 	}
 
-	result, err := client.Search(
-		fmt.Sprintf("%s %s",
-			d.Get("name").(string),
-			strings.Join(names, " "),
-		),
-		spotify.SearchTypeTrack,
-	)
+	track, err := client.GetTrack(id)
 	if err != nil {
-		return fmt.Errorf("Search: %w", err)
-	}
-	if len(result.Tracks.Tracks) == 0 {
-		return fmt.Errorf("Track not found")
+		return err
 	}
 
-	track := result.Tracks.Tracks[0]
 	d.Set("name", track.Name)
-	d.Set("artists", flattenServiceArtists(track.Artists))
+	d.Set("album", string(track.Album.ID))
+
+	artists := make([]interface{}, len(track.Artists))
+	for _, artist := range track.Artists {
+		artists = append(artists, string(artist.ID))
+	}
+	d.Set("artists", artists)
 	d.SetId(string(track.ID))
 
 	return nil
-}
-
-func flattenServiceArtists(in []spotify.SimpleArtist) []interface{} {
-	var out = make([]interface{}, len(in))
-	for i, v := range in {
-		out[i] = v.Name
-	}
-	return out
 }

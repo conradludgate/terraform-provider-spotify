@@ -16,12 +16,16 @@ Resource to manage a spotify playlist.
 ### Required
 
 - **name** (String) The name of the resulting playlist
-- **tracks** (List of String) A list of tracks for the playlist to contain
+- **tracks** (Set of String) A set of tracks for the playlist to contain
 
 ### Optional
 
 - **description** (String) The description of the resulting playlist
 - **id** (String) The ID of this resource.
 - **public** (Boolean) Whether the playlist can be accessed publically
+
+### Read-only
+
+- **snapshot_id** (String)
 
 

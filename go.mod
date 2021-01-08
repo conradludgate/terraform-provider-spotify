@@ -7,7 +7,6 @@ require (
 	cloud.google.com/go/storage v1.12.0 // indirect
 	github.com/aws/aws-sdk-go v1.36.22 // indirect
 	github.com/fatih/color v1.10.0 // indirect
-	github.com/google/uuid v1.1.4
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-getter v1.5.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
@@ -20,6 +19,7 @@ require (
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
+	github.com/stretchr/testify v1.6.1
 	github.com/ulikunitz/xz v0.5.9 // indirect
 	github.com/zclconf/go-cty v1.7.1 // indirect
 	github.com/zmb3/spotify v0.0.0-20200525010707-bc712583571e

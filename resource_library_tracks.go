@@ -10,20 +10,10 @@ import (
 func resourceLibraryTracksCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
 
-	tracks := d.Get("tracks").([]interface{})
-	trackIDs := make([]spotify.ID, len(tracks))
-	for i, track := range tracks {
-		trackIDs[i] = spotify.ID(track.(string))
-	}
+	trackIDs := spotifyIdsInterface(d.Get("tracks").([]interface{}))
 
-	for i := 0; i < len(tracks)/100; i++ {
-		if err := client.AddTracksToLibrary(trackIDs[100*i : 100*i+100]...); err != nil {
-			return fmt.Errorf("AddTracksToLibrary: %w", err)
-		}
-	}
-
-	if len(tracks)%100 != 0 {
-		if err := client.AddTracksToLibrary(trackIDs[100*(len(tracks)/100):]...); err != nil {
+	for _, rng := range batches(len(trackIDs), 100) {
+		if err := client.AddTracksToLibrary(trackIDs[rng.Start:rng.End]...); err != nil {
 			return fmt.Errorf("AddTracksToLibrary: %w", err)
 		}
 	}
@@ -64,37 +54,17 @@ func resourceLibraryTracksUpdate(d *schema.ResourceData, m interface{}) error {
 		add := newSet.Difference(oldSet).List()
 		sub := oldSet.Difference(newSet).List()
 
-		addTrackIDs := make([]spotify.ID, len(add))
-		for i, track := range add {
-			addTrackIDs[i] = spotify.ID(track.(string))
-		}
+		addTrackIDs := spotifyIdsInterface(add)
+		subTrackIDs := spotifyIdsInterface(sub)
 
-		subTrackIDs := make([]spotify.ID, len(sub))
-		for i, track := range sub {
-			subTrackIDs[i] = spotify.ID(track.(string))
-		}
-
-		for i := 0; i < len(add)/100; i++ {
-			if err := client.AddTracksToLibrary(addTrackIDs[100*i : 100*i+100]...); err != nil {
+		for _, rng := range batches(len(add), 100) {
+			if err := client.AddTracksToLibrary(addTrackIDs[rng.Start:rng.End]...); err != nil {
 				return fmt.Errorf("AddTracksToLibrary: %w", err)
 			}
 		}
-
-		if len(add)%100 != 0 {
-			if err := client.AddTracksToLibrary(addTrackIDs[100*(len(add)/100):]...); err != nil {
+		for _, rng := range batches(len(sub), 100) {
+			if err := client.RemoveTracksFromLibrary(subTrackIDs[rng.Start:rng.End]...); err != nil {
 				return fmt.Errorf("AddTracksToLibrary: %w", err)
-			}
-		}
-
-		for i := 0; i < len(sub)/100; i++ {
-			if err := client.RemoveTracksFromLibrary(subTrackIDs[100*i : 100*i+100]...); err != nil {
-				return fmt.Errorf("RemoveTracksFromLibrary: %w", err)
-			}
-		}
-
-		if len(sub)%100 != 0 {
-			if err := client.RemoveTracksFromLibrary(subTrackIDs[100*(len(sub)/100):]...); err != nil {
-				return fmt.Errorf("RemoveTracksFromLibrary: %w", err)
 			}
 		}
 	}

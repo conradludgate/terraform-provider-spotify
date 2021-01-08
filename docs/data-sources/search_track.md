@@ -13,13 +13,28 @@ description: |-
 
 ## Schema
 
-### Required
-
-- **artists** (List of String)
-- **name** (String)
-
 ### Optional
 
+- **album** (String)
+- **artists** (List of String)
 - **id** (String) The ID of this resource.
+- **limit** (Number)
+- **name** (String)
+- **year** (String)
+
+### Read-only
+
+- **track** (Map of String)
+- **tracks** (List of Object) (see [below for nested schema](#nestedatt--tracks))
+
+<a id="nestedatt--tracks"></a>
+### Nested Schema for `tracks`
+
+Read-only:
+
+- **album** (String)
+- **artists** (List of String)
+- **id** (String)
+- **name** (String)
 
 

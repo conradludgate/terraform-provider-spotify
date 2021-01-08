@@ -1,21 +1,16 @@
 terraform {
   required_providers {
     spotify = {
-      version = "~> 0.1.2"
+      version = "~> 0.1.4"
       source  = "conradludgate/spotify"
     }
   }
 }
 
-variable "spotify_auth_code" {
-  type = string
-}
-
-variable "spotify_code_verifier" {
+variable "spotify_api_key" {
   type = string
 }
 
 provider "spotify" {
-  auth_code     = var.spotify_auth_code
-  code_verifier = var.spotify_code_verifier
+  api_key = var.spotify_api_key
 }
