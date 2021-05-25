@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/zmb3/spotify"
@@ -35,6 +37,7 @@ func dataSourceSearchTrack() *schema.Resource {
 			},
 			"limit": {
 				Type:     schema.TypeInt,
+				Default:  10,
 				Optional: true,
 			},
 			"tracks": {
@@ -140,12 +143,13 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 	results, err := client.SearchOpt(strings.Join(queries, " "), spotify.SearchTypeTrack, &spotify.Options{
 		Limit: limit,
 	})
+
 	if err != nil {
 		return fmt.Errorf("Could not perform search [%v]: %w", queries, err)
 	}
 
 	if results.Tracks.Total == 0 {
-		return fmt.Errorf("could not find track")
+		return fmt.Errorf("Could not find track")
 	}
 
 	var tracks []interface{}
@@ -161,13 +165,17 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 			"artists": artists,
 			"album":   track.Album.ID.String(),
 		})
+
 		ids = append(ids, track.ID.String())
 	}
 
 	if *limit == 1 {
 		d.Set("track", tracks[0])
 	}
+
 	d.Set("tracks", tracks)
+	// Sets an id in the state
+	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 
 	return nil
 }
