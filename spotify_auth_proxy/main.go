@@ -36,7 +36,7 @@ func main() {
 	config = &oauth2.Config{
 		ClientID:     os.Getenv("SPOTIFY_CLIENT_ID"),
 		ClientSecret: os.Getenv("SPOTIFY_CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("SPOTIFY_CLIENT_REDIRECT_URL"),
+		RedirectURL:  os.Getenv("SPOTIFY_CLIENT_REDIRECT_URI"),
 		Endpoint:     spotify.Endpoint,
 		Scopes: []string{
 			"user-read-email",

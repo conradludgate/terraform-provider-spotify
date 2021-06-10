@@ -5,19 +5,27 @@ This is an instance of a 'spotify auth server' which acts as an interface betwee
 ## Installation
 
 With `go` installed, run
+
 ```sh
 go get -u github.com/conradludgate/terraform-provider-spotify/spotify_auth_proxy
 ```
 
 ## Usage
 
-First, you need a spotify client id and secret. Visit https://developer.spotify.com/dashboard/ to create an application.
+First, you need a Spotify client id and secret. Visit https://developer.spotify.com/dashboard/ to create an application.
 
-If you plan to run this proxy locally, set the redirect uri of the application to `http://localhost:27228/spotify_callback`.
+If you plan to run this proxy locally, set the redirect URI of the application to `http://localhost:27228/spotify_callback`.
 
-If you plan to host it on an external server, the redirect uri should be the equivalent URL path on your host. I would recommend putting it behind nginx or some other reverse proxy with SSL enabled.
+```sh
+export SPOTIFY_CLIENT_REDIRECT_URI=http://localhost:27228/spotify_callback
+```
+
+You will also need to register the callback URI with Spotify for your application. Visit https://developer.spotify.com/dashboard/, click on your application, find and click the "Edit Settings" button, and paste the `spotify_callback` URI above into "Redirect URIs". Scroll down and click "Save".
+
+If you plan to host it on an external server, the redirect URI should be the equivalent URL path on your host. I would recommend putting it behind Nginx or some other reverse proxy with SSL enabled.
 
 To start the server, make sure the environment variables are set `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` and `SPOTIFY_CLIENT_REDIRECT_URI`, then run
+
 ```sh
 spotify_auth_proxy
 ```
