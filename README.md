@@ -35,7 +35,7 @@ terraform {
 ## How to use
 
 First, you need an instance of a spotify auth server running. This acts as a middleware between terraform and spotify to allow easy access to access tokens.
-See [spotify_auth_proxy](/spotify_auth_proxy) to get start.
+See [spotify_auth_proxy](/spotify_auth_proxy) to get started.
 
 Once you have the server running, make note of the API Key it gives you.
 
@@ -83,6 +83,4 @@ data "spotify_search_track" "search" {
 output "test" {
   value = data.spotify_search_track.search.tracks
 }
-
-
 ```
