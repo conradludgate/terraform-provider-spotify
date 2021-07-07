@@ -1,6 +1,6 @@
 # spotify_auth_proxy
 
-This is an instance of a 'spotify auth server' which acts as an interface between a client and the spotify oauth API.
+This is an instance of a 'Spotify auth server' which acts as an interface between a client and the Spotify oauth API.
 
 ## Installation
 
@@ -12,7 +12,7 @@ go get -u github.com/conradludgate/terraform-provider-spotify/spotify_auth_proxy
 
 ## Usage
 
-First, you need a Spotify client id and secret. Visit https://developer.spotify.com/dashboard/ to create an application.
+First, you need a Spotify client ID and secret. Visit https://developer.spotify.com/dashboard/ to create an application.
 
 If you plan to run this proxy locally, set the redirect URI of the application to `http://localhost:27228/spotify_callback`.
 
@@ -69,8 +69,8 @@ SPOTIFY_CLIENT_SECRET=
 Then, run the following command to start the auth proxy.
 
 ```
-docker run --rm -it -p 27228:27228 --env-file ./.env spotify_auth_proxy
-ey: OK7b1j...
+$ docker run --rm -it -p 27228:27228 --env-file ./.env spotify_auth_proxy
+APIKey: OK7b1j...
 Token:  aoIvJT...
 Auth Server: http://localhost:27228/authorize?token=aoIvJT...
 ```
