@@ -32,6 +32,7 @@ func main() {
 	token = randString(charSet, 64)
 	fmt.Println("APIKey:", apiKey)
 	fmt.Println("Token: ", token)
+	fmt.Printf("Auth Server: http://localhost:27228/authorize?token=%s", token)
 
 	config = &oauth2.Config{
 		ClientID:     os.Getenv("SPOTIFY_CLIENT_ID"),

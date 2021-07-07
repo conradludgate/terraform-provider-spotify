@@ -33,12 +33,44 @@ spotify_auth_proxy
 It should output the following:
 
 ```
-APIKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-Token:  YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+APIKey:       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+Token:        YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+Auth Server : ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
 ```
 
 Take note of both of these values.
 
-Now, open a browser and navigate to `http://localhost:27228/authorize?token={TOKEN FROM ABOVE}` or approriate for your server location. It should redirect you to spotify to login, and then you will be redirected back to the page where it should confirm that you've authorized correctly.
+Now, open a browser and navigate to the Auth Server URL or the appropriate for your server location. It should redirect you to Spotify to login. After you log in, the auth server will redirect you back to the page where it should confirm that you've authorized correctly.
 
 The API Key is how you will retrieve the access token. The server will handle the token expiration and refreshes for you.
+
+## Docker
+
+Alternatively, you can use the Docker to deploy the Spotify auth proxy locally.
+
+### Build your Docker image
+
+Go to `spotify_auth_proxy` and run the following command to build your Docker image,
+
+```
+docker build . -t spotify_auth_proxy
+```
+
+### Start auth proxy server
+
+First, create a file named `.env` and populate it with the `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` and `SPOTIFY_CLIENT_REDIRECT_URI`. Your file should look similar to the following.
+
+```
+SPOTIFY_CLIENT_REDIRECT_URI=http://localhost:27228/spotify_callback
+SPOTIFY_CLIENT_ID=
+SPOTIFY_CLIENT_SECRET=
+```
+
+Then, run the following command to start the auth proxy.
+
+```
+docker run --rm -it -p 27228:27228 --env-file ./.env spotify_auth_proxy
+ey: OK7b1j...
+Token:  aoIvJT...
+Auth Server: http://localhost:27228/authorize?token=aoIvJT...
+```
