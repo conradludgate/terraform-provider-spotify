@@ -11,7 +11,9 @@ import (
 	"log"
 	"math/big"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/spotify"
@@ -28,15 +30,33 @@ var (
 )
 
 func main() {
+	host := os.Getenv("SPOTIFY_CLIENT_BASE_URI")
+	if host == "" {
+		host = "http://localhost:27228"
+	}
+	hostUrl, err := url.Parse(host)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	apiKey = randString(charSet, 64)
 	token = randString(charSet, 64)
+
+	authUrl := *hostUrl
+	authUrl.Path = path.Join(authUrl.Path, "authorize")
+	authUrl.RawQuery = url.Values{"token": {token}}.Encode()
+
 	fmt.Println("APIKey:", apiKey)
 	fmt.Println("Token: ", token)
+	fmt.Println("Auth:  ", authUrl.String())
+
+	redirectUrl := *hostUrl
+	redirectUrl.Path = path.Join(redirectUrl.Path, "spotify_callback")
 
 	config = &oauth2.Config{
 		ClientID:     os.Getenv("SPOTIFY_CLIENT_ID"),
 		ClientSecret: os.Getenv("SPOTIFY_CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("SPOTIFY_CLIENT_REDIRECT_URI"),
+		RedirectURL:  redirectUrl.String(),
 		Endpoint:     spotify.Endpoint,
 		Scopes: []string{
 			"user-read-email",
@@ -154,7 +174,6 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintln(w, "Authorization successful")
 	fmt.Println("Authorization successful")
-	return
 }
 
 const charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

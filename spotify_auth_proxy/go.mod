@@ -1,5 +1,3 @@
-// +heroku goVersion go1.16
-
 module github.com/conradludgate/terraform-provider-spotify/spotify_auth_proxy
 
 go 1.16
