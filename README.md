@@ -25,7 +25,7 @@ The following to your terraform configuration
 terraform {
   required_providers {
     spotify = {
-      version = "~> 0.1.4"
+      version = "~> 0.1.6"
       source  = "conradludgate/spotify"
     }
   }
