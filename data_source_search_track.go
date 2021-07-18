@@ -161,23 +161,19 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 	var ids []string
 	for _, track := range results.Tracks.Tracks {
 		var artists []interface{}
+		trackData := map[string]interface{}{
+			"id":      track.ID.String(),
+			"name":    track.Name,
+			"artists": artists,
+			"album":   track.Album.ID.String(),
+		}
 		for _, artist := range track.Artists {
 			artists = append(artists, artist.ID.String())
 		}
 		if track.Explicit && d.Get("explicit").(bool) {
-			tracks = append(tracks, map[string]interface{}{
-				"id":      track.ID.String(),
-				"name":    track.Name,
-				"artists": artists,
-				"album":   track.Album.ID.String(),
-			})
+			tracks = append(tracks, trackData)
 		} else if !track.Explicit {
-			tracks = append(tracks, map[string]interface{}{
-				"id":      track.ID.String(),
-				"name":    track.Name,
-				"artists": artists,
-				"album":   track.Album.ID.String(),
-			})
+			tracks = append(tracks, trackData)
 		}
 
 		ids = append(ids, track.ID.String())
