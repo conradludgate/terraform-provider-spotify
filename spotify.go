@@ -14,57 +14,10 @@ import (
 
 // ClientConfigurer for spotify API access
 func ClientConfigurer(d *schema.ResourceData) (interface{}, error) {
-	// req, err := http.NewRequest("POST", d.Get("auth_server").(string), nil)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// req.SetBasicAuth("SpotifyAuthProxy", d.Get("api_key").(string))
-	// resp, err := http.DefaultClient.Do(req)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer resp.Body.Close()
-	// body, err := ioutil.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if resp.StatusCode != http.StatusOK {
-	// 	return nil, fmt.Errorf("%s", string(body))
-	// }
-
-	// tokenData := struct {
-	// 	AccessToken  string `json:"access_token"`
-	// 	RefreshToken string `json:"refresh_token"`
-	// 	ExpiresIn    int    `json:"expires_in"`
-	// 	TokenType    string `json:"token_type"`
-	// }{}
-
-	// if err := json.Unmarshal(body, &tokenData); err != nil {
-	// 	return nil, err
-	// }
-
-	// token := &oauth2.Token{
-	// 	AccessToken:  tokenData.AccessToken,
-	// 	RefreshToken: tokenData.RefreshToken,
-	// 	TokenType:    tokenData.TokenType,
-	// 	Expiry:       time.Now().Add(time.Duration(tokenData.ExpiresIn) * time.Second),
-	// }
-
-	// cnf := &oauth2.Config{
-	// 	// ClientID: d.Get("client_id").(string),
-	// 	ClientID:     "SpotifyAuthProxy",
-	// 	ClientSecret: d.Get("api_key").(string),
-	// 	Endpoint: oauth2.Endpoint{
-	// 		TokenURL:  d.Get("auth_server").(string),
-	// 		AuthStyle: oauth2.AuthStyleInHeader,
-	// 	},
-	// }
-
 	transport := &transport{
 		APIKey: d.Get("api_key").(string),
 		Server: d.Get("auth_server").(string),
 	}
-	transport.getToken()
 
 	client := spotify.NewClient(&http.Client{
 		Transport: transport,
@@ -81,7 +34,9 @@ type transport struct {
 
 func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if !t.token.Valid() {
-		t.getToken()
+		if err := t.getToken(); err != nil {
+			return nil, err
+		}
 	}
 
 	t.token.SetAuthHeader(req)
@@ -120,7 +75,7 @@ func (t *transport) getToken() error {
 		return err
 	}
 
-	if t.token.Valid() {
+	if !t.token.Valid() {
 		return errors.New("could not get a valid token")
 	}
 
