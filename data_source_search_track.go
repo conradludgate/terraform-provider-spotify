@@ -153,7 +153,6 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	var tracks []interface{}
-	var ids []string
 	for _, track := range results.Tracks.Tracks {
 		var artists []interface{}
 		for _, artist := range track.Artists {
@@ -165,8 +164,6 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 			"artists": artists,
 			"album":   track.Album.ID.String(),
 		})
-
-		ids = append(ids, track.ID.String())
 	}
 
 	if *limit == 1 {
