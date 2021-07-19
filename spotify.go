@@ -75,7 +75,7 @@ func (t *transport) getToken() error {
 		return err
 	}
 
-	if t.token.Valid() {
+	if !t.token.Valid() {
 		return errors.New("could not get a valid token")
 	}
 
