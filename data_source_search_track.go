@@ -96,6 +96,11 @@ func dataSourceSearchTrack() *schema.Resource {
 					},
 				},
 			},
+			"explicit": {
+				Type:     schema.TypeBool,
+				Default:  true,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -148,22 +153,28 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Could not perform search [%v]: %w", queries, err)
 	}
 
-	if results.Tracks.Total == 0 {
-		return fmt.Errorf("Could not find track")
-	}
-
 	var tracks []interface{}
 	for _, track := range results.Tracks.Tracks {
 		var artists []interface{}
 		for _, artist := range track.Artists {
 			artists = append(artists, artist.ID.String())
 		}
-		tracks = append(tracks, map[string]interface{}{
+
+		trackData := map[string]interface{}{
 			"id":      track.ID.String(),
 			"name":    track.Name,
 			"artists": artists,
 			"album":   track.Album.ID.String(),
-		})
+		}
+		if track.Explicit && d.Get("explicit").(bool) {
+			tracks = append(tracks, trackData)
+		} else if !track.Explicit {
+			tracks = append(tracks, trackData)
+		}
+	}
+
+	if len(tracks) == 0 {
+		return fmt.Errorf("Could not find track")
 	}
 
 	if *limit == 1 {

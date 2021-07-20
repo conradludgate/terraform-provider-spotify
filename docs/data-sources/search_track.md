@@ -21,6 +21,7 @@ description: |-
 - **limit** (Number)
 - **name** (String)
 - **year** (String)
+- **explicit** (Bool)
 
 ### Read-only
 
