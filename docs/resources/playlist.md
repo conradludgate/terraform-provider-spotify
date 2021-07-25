@@ -28,4 +28,16 @@ Resource to manage a spotify playlist.
 
 - **snapshot_id** (String)
 
+## Import
 
+A Spotify playlist can be imported using the playlist id, e.g.,
+
+```
+$ terraform import spotify_playlist.example 37i9dQZF1DWVs8I62NcHks
+```
+
+The playlist id is part of the URL used by the Spotify Web Player, e.g.,
+
+```
+https://open.spotify.com/playlist/37i9dQZF1DWVs8I62NcHks
+```
