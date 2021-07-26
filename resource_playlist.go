@@ -13,6 +13,9 @@ func resourcePlaylist() *schema.Resource {
 		Read:   resourcePlaylistRead,
 		Update: resourcePlaylistUpdate,
 		Delete: resourcePlaylistDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Description: "Resource to manage a spotify playlist.",
 
