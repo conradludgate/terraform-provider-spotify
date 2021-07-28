@@ -11,6 +11,32 @@ import (
 )
 
 func dataSourceSearchTrack() *schema.Resource {
+	trackResource := &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the track",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name of the track",
+			},
+			"artists": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "IDs of the artists",
+			},
+			"album": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the album that the track appears on",
+			},
+		},
+	}
+
 	return &schema.Resource{
 		Read: dataSourceSearchTrackRead,
 
@@ -48,63 +74,15 @@ func dataSourceSearchTrack() *schema.Resource {
 				Description: "Filter to allow explicit tracks",
 			},
 			"tracks": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the track",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the track",
-						},
-						"artists": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "IDs of the artists",
-						},
-						"album": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the album that the track appears on",
-						},
-					},
-				},
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        trackResource,
 				Description: "List of tracks found",
 			},
 			"track": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the track",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the track",
-						},
-						"artists": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "IDs of the artists",
-						},
-						"album": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the album that the track appears on",
-						},
-					},
-				},
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Elem:        trackResource,
 				Description: "Convenience option for tracks[0]. Only set if limit = 1",
 			},
 		},
