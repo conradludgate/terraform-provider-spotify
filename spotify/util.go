@@ -1,4 +1,4 @@
-package main
+package spotify
 
 import "github.com/zmb3/spotify"
 

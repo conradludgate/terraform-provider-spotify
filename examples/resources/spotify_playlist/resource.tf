@@ -1,18 +1,8 @@
----
-page_title: "spotify_library Resource - terraform-provider-spotify"
-subcategory: ""
-description: |-
-  
----
+resource "spotify_playlist" "playlist" {
+  name        = "My playlist"
+  description = "My playlist is so awesome"
+  public      = false
 
-# Resource `spotify_library`
-
-
-
-## Example Usage
-
-```terraform
-resource "spotify_library" "my_library" {
   tracks = [
     data.spotify_track.overkill.id,
     data.spotify_track.blackwater.id,
@@ -29,16 +19,3 @@ data "spotify_track" "blackwater" {
 data "spotify_track" "snowblind" {
   url = "https://open.spotify.com/track/7FCG2wIYG1XvGRUMACC2cD"
 }
-```
-
-## Schema
-
-### Required
-
-- **tracks** (Set of String)
-
-### Optional
-
-- **id** (String) The ID of this resource.
-
-

@@ -1,4 +1,4 @@
-package main
+package spotify
 
 import (
 	"fmt"
@@ -45,8 +45,6 @@ func resourceLibraryTracksRead(d *schema.ResourceData, m interface{}) error {
 func resourceLibraryTracksUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
 
-	d.Partial(true)
-
 	if d.HasChange("tracks") {
 		old, new := d.GetChange("tracks")
 		oldSet := old.(*schema.Set)
@@ -69,12 +67,5 @@ func resourceLibraryTracksUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	d.SetPartial("tracks")
-
-	d.Partial(false)
-	return nil
-}
-
-func resourceLibraryTracksDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }

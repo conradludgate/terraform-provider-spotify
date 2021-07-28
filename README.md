@@ -1,19 +1,12 @@
 # terraform-provider-spotify
 
+[![docs](https://img.shields.io/static/v1?label=docs&message=terraform&color=informational&style=for-the-badge)](https://registry.terraform.io/providers/conradludgate/spotify/latest/docs)
+
 This is a terraform provider for managing your spotify playlists.
 - [terraform-provider-spotify](#terraform-provider-spotify)
   - [Installation](#installation)
   - [How to use](#how-to-use)
   - [Example](#example)
-  - [Documentation](#documentation)
-    - [Resources](#resources)
-      - [spotify_library](#spotify_library)
-      - [spotify_playlist](#spotify_playlist)
-    - [Data sources](#data-sources)
-      - [spotify_search_track](#spotify_search_track)
-  - [Todo](#todo)
-    - [Playlist diff](#playlist-diff)
-    - [More Datasources](#more-datasources)
 
 ## Installation
 
@@ -25,7 +18,7 @@ The following to your terraform configuration
 terraform {
   required_providers {
     spotify = {
-      version = "~> 0.1.7"
+      version = "~> 0.1.9"
       source  = "conradludgate/spotify"
     }
   }
