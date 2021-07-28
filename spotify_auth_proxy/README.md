@@ -23,7 +23,7 @@ To start the server, make sure the environment variables `SPOTIFY_CLIENT_ID` and
 If running remotely, also configure your base url
 
 ```sh
-export SPOTIFY_CLIENT_BASE_URI=https://spotify.example.com
+export SPOTIFY_PROXY_BASE_URI=https://spotify.example.com
 ```
 
 Finally, run
@@ -35,9 +35,8 @@ spotify_auth_proxy
 It should output the following:
 
 ```
-APIKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-Token:  YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
-Auth:   ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+APIKey:   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+Auth URL: ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
 ```
 
 Take note of these values.
@@ -45,6 +44,8 @@ Take note of these values.
 Now, open a browser and navigate to the Auth URL. It should redirect you to Spotify to log in. After you log in, the auth server will redirect you back to the page where it should confirm that you've authorized correctly.
 
 The API Key is how you will retrieve the access token. The server will handle the token expiration and refreshes for you.
+
+The API Key is random on each invocation, you can specify the `SPOTIFY_PROXY_API_KEY` environment variable to keep it consistent
 
 ## Docker
 
