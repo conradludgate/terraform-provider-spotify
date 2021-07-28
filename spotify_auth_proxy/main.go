@@ -9,12 +9,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/big"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 
+	"github.com/caarlos0/env/v6"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/spotify"
 )
@@ -23,39 +23,45 @@ const id = "SpotifyAuthProxy"
 
 var (
 	source oauth2.TokenSource
-	apiKey string
+	envCfg *EnvConfig
 	token  string
 
 	config *oauth2.Config
 )
 
+type EnvConfig struct {
+	ClientID     string   `env:"SPOTIFY_CLIENT_ID,required"`
+	ClientSecret string   `env:"SPOTIFY_CLIENT_SECRET,required"`
+	BaseURL      *url.URL `env:"SPOTIFY_PROXY_BASE_URI" envDefault:"http://localhost:27228"`
+	APIKey       string   `env:"SPOTIFY_PROXY_API_KEY"`
+}
+
 func main() {
-	host := os.Getenv("SPOTIFY_CLIENT_BASE_URI")
-	if host == "" {
-		host = "http://localhost:27228"
-	}
-	hostUrl, err := url.Parse(host)
-	if err != nil {
-		log.Fatal(err)
+	envCfg = new(EnvConfig)
+	if err := env.Parse(envCfg); err != nil {
+		fmt.Printf("%+v\n", err)
+		os.Exit(1)
 	}
 
-	apiKey = randString(charSet, 64)
-	token = randString(charSet, 64)
+	if envCfg.APIKey == "" {
+		envCfg.APIKey = randString()
+		fmt.Println("APIKey:  ", envCfg.APIKey)
+	}
 
-	authUrl := *hostUrl
+	token = randString()
+
+	authUrl := *envCfg.BaseURL
 	authUrl.Path = path.Join(authUrl.Path, "authorize")
 	authUrl.RawQuery = url.Values{"token": {token}}.Encode()
 
-	fmt.Println("APIKey:", apiKey)
-	fmt.Println("Token: ", token)
-	fmt.Println("Auth:  ", authUrl.String())
+	fmt.Println("Auth URL:", authUrl.String())
 
-	redirectUrl := *hostUrl
+	redirectUrl := *envCfg.BaseURL
 	redirectUrl.Path = path.Join(redirectUrl.Path, "spotify_callback")
 
 	config = &oauth2.Config{
-		ClientID:     os.Getenv("SPOTIFY_CLIENT_ID"),
-		ClientSecret: os.Getenv("SPOTIFY_CLIENT_SECRET"),
+		ClientID:     envCfg.ClientID,
+		ClientSecret: envCfg.ClientSecret,
 		RedirectURL:  redirectUrl.String(),
 		Endpoint:     spotify.Endpoint,
 		Scopes: []string{
@@ -81,7 +87,7 @@ func main() {
 // APIToken is the endpoint for refreshing API tokens
 func APIToken(w http.ResponseWriter, r *http.Request) {
 	username, password, ok := r.BasicAuth()
-	if !ok || username != id || password != apiKey {
+	if !ok || username != id || password != envCfg.APIKey {
 		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Fprintln(w, "APIToken: invalid authorization")
 		return
@@ -116,8 +122,8 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
 
-	state := randString(charSet, 32)
-	mac := hmac.New(sha256.New, []byte(apiKey))
+	state := randString()
+	mac := hmac.New(sha256.New, []byte(envCfg.APIKey))
 	mac.Write([]byte(state))
 	state += base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
 
@@ -140,21 +146,21 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	state := r.FormValue("state")
-	if len(state) < 32 {
+	if len(state) < 64 {
 		fmt.Fprintln(w, "Could not complete authorization: invalid state value")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	state1 := []byte(state[:32])
-	stateMac, err := base64.RawURLEncoding.DecodeString(state[32:])
+	state1 := []byte(state[:64])
+	stateMac, err := base64.RawURLEncoding.DecodeString(state[64:])
 	if err != nil {
 		fmt.Fprintln(w, "Could not complete authorization: invalid state value")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	mac := hmac.New(sha256.New, []byte(apiKey))
+	mac := hmac.New(sha256.New, []byte(envCfg.APIKey))
 	mac.Write(state1)
 	expectedMac := mac.Sum(nil)
 	if !hmac.Equal(stateMac, expectedMac) {
@@ -176,19 +182,14 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Authorization successful")
 }
 
-const charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-func randString(charSet string, length int) string {
-	max := big.NewInt(int64(len(charSet)))
-	output := make([]byte, 0, length)
-	for i := 0; i < length; i++ {
-		n, err := rand.Int(rand.Reader, max)
-		if err != nil {
-			log.Fatalf("Error creating random string: %s\n", err)
-		}
-
-		output = append(output, charSet[int(n.Int64())])
+func randString() string {
+	output := make([]byte, 48)
+	n, err := rand.Reader.Read(output)
+	if err != nil {
+		panic(err)
 	}
-
-	return string(output)
+	if n != 48 {
+		panic("could not read 48 bytes")
+	}
+	return base64.RawURLEncoding.EncodeToString(output)
 }
