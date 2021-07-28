@@ -1,4 +1,4 @@
-package main
+package spotify
 
 import (
 	"fmt"
@@ -18,27 +18,34 @@ func dataSourceSearchTrack() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "",
+				Description: "Name of the track",
 			},
 			"artists": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Names of the artists",
 			},
 			"album": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "",
+				Description: "Name of the album",
 			},
 			"year": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "",
+				Description: "Year of release",
 			},
 			"limit": {
 				Type:     schema.TypeInt,
 				Default:  10,
 				Optional: true,
+			},
+			"explicit": {
+				Type:        schema.TypeBool,
+				Default:     true,
+				Optional:    true,
+				Description: "Filter to allow explicit tracks",
 			},
 			"tracks": {
 				Type:     schema.TypeList,
@@ -48,25 +55,27 @@ func dataSourceSearchTrack() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "",
+							Description: "ID of the track",
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "",
+							Description: "Name of the track",
 						},
 						"artists": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "IDs of the artists",
 						},
 						"album": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "",
+							Description: "ID of the album that the track appears on",
 						},
 					},
 				},
+				Description: "List of tracks found",
 			},
 			"track": {
 				Type:     schema.TypeMap,
@@ -76,30 +85,27 @@ func dataSourceSearchTrack() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "",
+							Description: "ID of the track",
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "",
+							Description: "Name of the track",
 						},
 						"artists": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "IDs of the artists",
 						},
 						"album": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "",
+							Description: "ID of the album that the track appears on",
 						},
 					},
 				},
-			},
-			"explicit": {
-				Type:     schema.TypeBool,
-				Default:  true,
-				Optional: true,
+				Description: "Convenience option for tracks[0]. Only set if limit = 1",
 			},
 		},
 	}
@@ -113,14 +119,6 @@ func addSearchTerm(queries []string, key, field string) []string {
 		return append(queries, fmt.Sprintf("%s:\"%s\"", key, field))
 	}
 	return append(queries, fmt.Sprintf("%s:%s", key, field))
-}
-
-func strSlice(slice []interface{}) []string {
-	output := make([]string, len(slice))
-	for i, v := range slice {
-		output[i] = v.(string)
-	}
-	return output
 }
 
 func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
@@ -150,7 +148,7 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Could not perform search [%v]: %w", queries, err)
+		return fmt.Errorf("could not perform search [%v]: %w", queries, err)
 	}
 
 	var tracks []interface{}
@@ -174,7 +172,7 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if len(tracks) == 0 {
-		return fmt.Errorf("Could not find track")
+		return fmt.Errorf("could not find track")
 	}
 
 	if *limit == 1 {

@@ -1,4 +1,4 @@
-package main
+package spotify
 
 import (
 	"fmt"
@@ -122,8 +122,6 @@ func resourcePlaylistRead(d *schema.ResourceData, m interface{}) error {
 func resourcePlaylistUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
 
-	d.Partial(true)
-
 	id := spotify.ID(d.Id())
 	if d.HasChanges("name", "description", "public") {
 		err := client.ChangePlaylistNameAccessAndDescription(
@@ -136,10 +134,6 @@ func resourcePlaylistUpdate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return fmt.Errorf("ChangePlaylist: %w", err)
 		}
-
-		d.SetPartial("name")
-		d.SetPartial("description")
-		d.SetPartial("public")
 	}
 
 	if d.HasChange("tracks") {
@@ -165,8 +159,6 @@ func resourcePlaylistUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 
 		d.Set("snapshot_id", snapshotID)
-
-		d.SetPartial("tracks")
 	}
 
 	return nil
