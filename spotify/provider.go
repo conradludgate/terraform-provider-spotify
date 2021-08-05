@@ -16,19 +16,15 @@ func Provider() *schema.Provider {
 			},
 			"token_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Default:     "terraform",
 				Description: "Oauth2 Proxy token ID",
-				DefaultFunc: func() (interface{}, error) {
-					return "terraform", nil
-				},
 			},
 			"username": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Default:     "SpotifyAuthProxy",
 				Description: "Oauth2 Proxy username",
-				DefaultFunc: func() (interface{}, error) {
-					return "SpotifyAuthProxy", nil
-				},
 			},
 			"api_key": {
 				Type:        schema.TypeString,
