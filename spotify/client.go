@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"path"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/zmb3/spotify"
@@ -14,9 +16,17 @@ import (
 
 // ClientConfigurer for spotify API access
 func ClientConfigurer(d *schema.ResourceData) (interface{}, error) {
+	server, err := url.Parse(d.Get("auth_server").(string))
+	if err != nil {
+		return nil, fmt.Errorf("auth_server was not a valid url: %w", err)
+	}
+	server.Path = path.Join(server.Path, "api/v1/token")
+	server.Path = path.Join(server.Path, d.Get("token_id").(string))
+
 	transport := &transport{
-		APIKey: d.Get("api_key").(string),
-		Server: d.Get("auth_server").(string),
+		Endpoint: server.String(),
+		Username: d.Get("username").(string),
+		APIKey:   d.Get("api_key").(string),
 	}
 
 	client := spotify.NewClient(&http.Client{
@@ -26,10 +36,11 @@ func ClientConfigurer(d *schema.ResourceData) (interface{}, error) {
 }
 
 type transport struct {
-	APIKey string
-	Server string
-	Base   http.RoundTripper
-	token  *oauth2.Token
+	Endpoint string
+	Username string
+	APIKey   string
+	Base     http.RoundTripper
+	token    *oauth2.Token
 }
 
 func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -52,11 +63,11 @@ func (t *transport) base() http.RoundTripper {
 }
 
 func (t *transport) getToken() error {
-	req, err := http.NewRequest("GET", t.Server, nil)
+	req, err := http.NewRequest("POST", t.Endpoint, nil)
 	if err != nil {
 		return err
 	}
-	req.SetBasicAuth("SpotifyAuthProxy", t.APIKey)
+	req.SetBasicAuth(t.Username, t.APIKey)
 	resp, err := t.base().RoundTrip(req)
 	if err != nil {
 		return err

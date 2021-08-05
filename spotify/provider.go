@@ -11,13 +11,25 @@ func Provider() *schema.Provider {
 			"auth_server": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "http://localhost:27228/api/token",
-				Description: "Spotify auth proxy URL",
+				Default:     "http://localhost:27228",
+				Description: "Oauth2 Proxy URL",
+			},
+			"token_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "terraform",
+				Description: "Oauth2 Proxy token ID",
+			},
+			"username": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "SpotifyAuthProxy",
+				Description: "Oauth2 Proxy username",
 			},
 			"api_key": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Spotify auth proxy API Key",
+				Description: "Oauth2 Proxy API Key",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{

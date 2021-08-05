@@ -27,8 +27,10 @@ variable "spotify_api_key" {
 
 ### Required
 
-- **api_key** (String) Spotify auth proxy API Key
+- **api_key** (String) Oauth2 Proxy API Key
 
 ### Optional
 
-- **auth_server** (String) Spotify auth proxy URL
+- **auth_server** (String) Oauth2 Proxy URL
+- **token_id** (String) Oauth2 Proxy token ID
+- **username** (String) Oauth2 Proxy username
