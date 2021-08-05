@@ -12,7 +12,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "http://localhost:27228",
-				Description: "Spotify auth proxy URL",
+				Description: "Oauth2 Proxy URL",
 			},
 			"token_id": {
 				Type:        schema.TypeString,

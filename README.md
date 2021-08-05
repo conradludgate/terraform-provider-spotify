@@ -10,15 +10,13 @@ This is a terraform provider for managing your spotify playlists.
 
 ## Installation
 
-Add
-
-The following to your terraform configuration
+Add the following to your terraform configuration
 
 ```tf
 terraform {
   required_providers {
     spotify = {
-      version = "~> 0.1.9"
+      version = "~> 0.2.0"
       source  = "conradludgate/spotify"
     }
   }
@@ -27,7 +25,43 @@ terraform {
 
 ## How to use
 
-First, you need an instance of a spotify auth server running. This acts as a middleware between terraform and spotify to allow easy access to access tokens.
+First, you need an instance of a spotify oauth2 server running. This acts as a middleware between terraform and spotify to allow easy access to access tokens.
+
+### Public proxy
+
+For a simple way to manage your spotify oauth2 tokens is to use https://oauth2.conrad.cafe. ([source code](https://github.com/conradludgate/oauth2-proxy))
+
+Register a new account, create a spotify token with the following scopes
+
+* user-read-email
+* user-read-private
+* playlist-read-private
+* playlist-modify-private
+* playlist-modify-public
+* user-library-read
+* user-library-modify
+
+Then take note of the token id in the URL and the API key that is shown on the page
+
+Configure the terraform provider like so
+
+```tf
+provider "spotify" {
+  auth_server = "https://oauth2.conrad.cafe"
+  api_key = var.spotify_api_key
+  username = "your username"
+  token_id = "your token id"
+}
+
+variable "spotify_api_key" {
+  type = string
+}
+```
+
+### Self hosted
+
+If you want a bit more control over your tokens, you can self host a simple instance of the oauth2 proxy designed specifically for this terraform provider
+
 See [spotify_auth_proxy](/spotify_auth_proxy) to get started.
 
 Once you have the server running, make note of the API Key it gives you.
