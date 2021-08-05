@@ -3,10 +3,45 @@
 [![docs](https://img.shields.io/static/v1?label=docs&message=terraform&color=informational&style=for-the-badge)](https://registry.terraform.io/providers/conradludgate/spotify/latest/docs)
 
 This is a terraform provider for managing your spotify playlists.
-- [terraform-provider-spotify](#terraform-provider-spotify)
-  - [Installation](#installation)
-  - [How to use](#how-to-use)
-  - [Example](#example)
+
+Featured tutorial - https://learn.hashicorp.com/tutorials/terraform/spotify-playlist
+
+Featured interview - https://www.hashicorp.com/blog/build-your-summer-spotify-playlist-with-terraform
+
+## Example
+
+```tf
+resource "spotify_playlist" "playlist" {
+  name        = "My playlist"
+  description = "My playlist is so awesome"
+  public      = false
+
+  tracks = [
+    data.spotify_track.overkill.id,
+    data.spotify_track.blackwater.id,
+    data.spotify_track.overkill.id,
+    data.spotify_search_track.search.tracks[0].id,
+  ]
+}
+
+data "spotify_track" "overkill" {
+  url = "https://open.spotify.com/track/4XdaaDFE881SlIaz31pTAG"
+}
+data "spotify_track" "blackwater" {
+  spotify_id = "4lE6N1E0L8CssgKEUCgdbA"
+}
+
+data "spotify_search_track" "search" {
+  name    = "Somebody Told Me"
+  artists = ["The Killers"]
+  album   = "Hot Fuss"
+}
+
+output "test" {
+  value = data.spotify_search_track.search.tracks
+}
+```
+
 
 ## Installation
 
@@ -16,8 +51,8 @@ Add the following to your terraform configuration
 terraform {
   required_providers {
     spotify = {
-      version = "~> 0.2.0"
       source  = "conradludgate/spotify"
+      version = "~> 0.2.0"
     }
   }
 }
@@ -75,39 +110,5 @@ variable "spotify_api_key" {
 
 provider "spotify" {
   api_key = var.spotify_api_key
-}
-```
-
-## Example
-
-```tf
-resource "spotify_playlist" "playlist" {
-  name        = "My playlist"
-  description = "My playlist is so awesome"
-  public      = false
-
-  tracks = [
-    data.spotify_track.overkill.id,
-    data.spotify_track.blackwater.id,
-    data.spotify_track.overkill.id,
-    data.spotify_search_track.search.tracks[0].id,
-  ]
-}
-
-data "spotify_track" "overkill" {
-  url = "https://open.spotify.com/track/4XdaaDFE881SlIaz31pTAG"
-}
-data "spotify_track" "blackwater" {
-  spotify_id = "4lE6N1E0L8CssgKEUCgdbA"
-}
-
-data "spotify_search_track" "search" {
-  name    = "Somebody Told Me"
-  artists = ["The Killers"]
-  album   = "Hot Fuss"
-}
-
-output "test" {
-  value = data.spotify_search_track.search.tracks
 }
 ```
