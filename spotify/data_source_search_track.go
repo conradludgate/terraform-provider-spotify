@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zmb3/spotify"
 )
 
@@ -80,7 +80,7 @@ func dataSourceSearchTrack() *schema.Resource {
 				Description: "List of tracks found",
 			},
 			"track": {
-				Type:        schema.TypeMap,
+				Type:        schema.TypeSet,
 				Computed:    true,
 				Elem:        trackResource,
 				Description: "Convenience option for tracks[0]. Only set if limit = 1",
@@ -92,9 +92,6 @@ func dataSourceSearchTrack() *schema.Resource {
 func addSearchTerm(queries []string, key, field string) []string {
 	if field == "" {
 		return queries
-	}
-	if strings.Contains(field, " ") {
-		return append(queries, fmt.Sprintf("%s:\"%s\"", key, field))
 	}
 	return append(queries, fmt.Sprintf("%s:%s", key, field))
 }
@@ -158,6 +155,7 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.Set("tracks", tracks)
+
 	// Sets an id in the state
 	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 

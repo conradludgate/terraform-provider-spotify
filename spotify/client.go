@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 )

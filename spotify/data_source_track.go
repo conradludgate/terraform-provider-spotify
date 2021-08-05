@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zmb3/spotify"
 )
 
@@ -71,7 +71,7 @@ func dataSourceTrackRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("name", track.Name)
 	d.Set("album", string(track.Album.ID))
 
-	artists := make([]interface{}, len(track.Artists))
+	artists := make([]interface{}, 0, len(track.Artists))
 	for _, artist := range track.Artists {
 		artists = append(artists, string(artist.ID))
 	}

@@ -47,8 +47,19 @@ data "spotify_search_track" "break_free" {
 
 ### Read-only
 
-- **track** (Map of String) Convenience option for tracks[0]. Only set if limit = 1
+- **track** (Set of Object) Convenience option for tracks[0]. Only set if limit = 1 (see [below for nested schema](#nestedatt--track))
 - **tracks** (List of Object) List of tracks found (see [below for nested schema](#nestedatt--tracks))
+
+<a id="nestedatt--track"></a>
+### Nested Schema for `track`
+
+Read-only:
+
+- **album** (String)
+- **artists** (List of String)
+- **id** (String)
+- **name** (String)
+
 
 <a id="nestedatt--tracks"></a>
 ### Nested Schema for `tracks`
