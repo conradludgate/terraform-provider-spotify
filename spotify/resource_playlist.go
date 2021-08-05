@@ -3,7 +3,7 @@ package spotify
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zmb3/spotify"
 )
 
@@ -14,7 +14,7 @@ func resourcePlaylist() *schema.Resource {
 		Update: resourcePlaylistUpdate,
 		Delete: resourcePlaylistDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Description: "Resource to manage a spotify playlist.",

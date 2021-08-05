@@ -3,20 +3,22 @@ package spotify
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zmb3/spotify"
 )
 
 func resourceLibraryTracksCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
 
-	trackIDs := spotifyIdsInterface(d.Get("tracks").([]interface{}))
+	trackIDs := spotifyIdsInterface(d.Get("tracks").(*schema.Set).List())
 
 	for _, rng := range batches(len(trackIDs), 100) {
 		if err := client.AddTracksToLibrary(trackIDs[rng.Start:rng.End]...); err != nil {
 			return fmt.Errorf("AddTracksToLibrary: %w", err)
 		}
 	}
+
+	d.SetId("library")
 
 	return nil
 }

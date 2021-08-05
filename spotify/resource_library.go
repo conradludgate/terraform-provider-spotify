@@ -1,7 +1,7 @@
 package spotify
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceLibrary() *schema.Resource {
@@ -23,20 +23,14 @@ func resourceLibrary() *schema.Resource {
 }
 
 func resourceLibraryCreate(d *schema.ResourceData, m interface{}) error {
-	// client := m.(*spotify.Client)
-
 	return resourceLibraryTracksCreate(d, m)
 }
 
 func resourceLibraryRead(d *schema.ResourceData, m interface{}) error {
-	// client := m.(*spotify.Client)
-
 	return resourceLibraryTracksRead(d, m)
 }
 
 func resourceLibraryUpdate(d *schema.ResourceData, m interface{}) error {
-	// client := m.(*spotify.Client)
-
 	return resourceLibraryTracksUpdate(d, m)
 }
 
