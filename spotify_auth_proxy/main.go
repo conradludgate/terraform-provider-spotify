@@ -78,7 +78,7 @@ func main() {
 	}
 
 	http.HandleFunc("/authorize", Authorize)
-	http.HandleFunc("/api/token", APIToken)
+	http.HandleFunc("/api/v1/token/terraform", APIToken)
 	http.HandleFunc("/spotify_callback", SpotifyCallback)
 
 	log.Fatal(http.ListenAndServe(":27228", nil))
