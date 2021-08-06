@@ -46,11 +46,10 @@ func dataSourceSearchTrack() *schema.Resource {
 				Optional:    true,
 				Description: "Name of the track",
 			},
-			"artists": {
-				Type:        schema.TypeList,
+			"artist": {
+				Type:        schema.TypeString,
 				Optional:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Names of the artists",
+				Description: "Name of the artist",
 			},
 			"album": {
 				Type:        schema.TypeString,
@@ -79,12 +78,6 @@ func dataSourceSearchTrack() *schema.Resource {
 				Elem:        trackResource,
 				Description: "List of tracks found",
 			},
-			"track": {
-				Type:        schema.TypeSet,
-				Computed:    true,
-				Elem:        trackResource,
-				Description: "Convenience option for tracks[0]. Only set if limit = 1",
-			},
 		},
 	}
 }
@@ -100,26 +93,15 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
 
 	var queries []string
-
 	queries = addSearchTerm(queries, "track", d.Get("name").(string))
-
-	artists := d.Get("artists").([]interface{})
-	for _, artist := range artists {
-		queries = addSearchTerm(queries, "artist", artist.(string))
-	}
-
+	queries = addSearchTerm(queries, "artist", d.Get("artist").(string))
 	queries = addSearchTerm(queries, "album", d.Get("album").(string))
-
 	queries = addSearchTerm(queries, "year", d.Get("year").(string))
 
-	var limit *int
-	if lim, ok := d.GetOk("limit"); ok {
-		lim := lim.(int)
-		limit = &lim
-	}
+	limit := d.Get("limit").(int)
 
 	results, err := client.SearchOpt(strings.Join(queries, " "), spotify.SearchTypeTrack, &spotify.Options{
-		Limit: limit,
+		Limit: &limit,
 	})
 
 	if err != nil {
@@ -144,14 +126,6 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 		} else if !track.Explicit {
 			tracks = append(tracks, trackData)
 		}
-	}
-
-	if len(tracks) == 0 {
-		return fmt.Errorf("could not find track")
-	}
-
-	if *limit == 1 {
-		d.Set("track", tracks[0])
 	}
 
 	d.Set("tracks", tracks)

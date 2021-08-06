@@ -27,7 +27,7 @@ func TestSpotify_DataSource_SearchTrack(t *testing.T) {
 					}
 
 					data "spotify_search_track" "delta_heavy" {
-						artists = ["Delta Heavy"]
+						artist   = "Delta Heavy"
 						explicit = false
 					}
 				`, apiKey),
