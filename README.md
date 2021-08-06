@@ -16,12 +16,12 @@ resource "spotify_playlist" "playlist" {
   description = "My playlist is so awesome"
   public      = false
 
-  tracks = [
+  tracks = flatten([
     data.spotify_track.overkill.id,
     data.spotify_track.blackwater.id,
     data.spotify_track.overkill.id,
-    data.spotify_search_track.search.tracks[0].id,
-  ]
+    data.spotify_search_track.search.tracks[*].id,
+  ])
 }
 
 data "spotify_track" "overkill" {
@@ -32,9 +32,9 @@ data "spotify_track" "blackwater" {
 }
 
 data "spotify_search_track" "search" {
-  name    = "Somebody Told Me"
-  artists = ["The Killers"]
-  album   = "Hot Fuss"
+  name   = "Somebody Told Me"
+  artist = "The Killers"
+  album  = "Hot Fuss"
 }
 
 output "test" {
