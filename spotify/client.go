@@ -32,6 +32,9 @@ func ClientConfigurer(d *schema.ResourceData) (interface{}, error) {
 	client := spotify.NewClient(&http.Client{
 		Transport: transport,
 	})
+
+	client.AutoRetry = true
+
 	return &client, nil
 }
 
