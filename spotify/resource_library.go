@@ -10,6 +10,9 @@ func resourceLibrary() *schema.Resource {
 		Read:   resourceLibraryRead,
 		Update: resourceLibraryUpdate,
 		Delete: resourceLibraryDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"tracks": {
