@@ -37,7 +37,7 @@ func resourcePlaylist() *schema.Resource {
 				Description: "Whether the playlist can be accessed publically",
 			},
 			"tracks": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "A set of tracks for the playlist to contain",
@@ -70,7 +70,7 @@ func resourcePlaylistCreate(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(string(playlist.ID))
 
-	trackIDs := spotifyIdsInterface(d.Get("tracks").(*schema.Set).List())
+	trackIDs := spotifyIdsInterface(d.Get("tracks").([]interface{}))
 
 	snapshotID := playlist.SnapshotID
 	for _, rng := range batches(len(trackIDs), 100) {
@@ -137,28 +137,25 @@ func resourcePlaylistUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if d.HasChange("tracks") {
-		old, new := d.GetChange("tracks")
-		oldSet := old.(*schema.Set)
-		newSet := new.(*schema.Set)
-		add := spotifyIdsInterface(newSet.Difference(oldSet).List())
-		sub := spotifyIdsInterface(oldSet.Difference(newSet).List())
+		new := spotifyIdsInterface(d.Get("tracks").([]interface{}))
 
 		var err error
 		var snapshotID string
-		for _, rng := range batches(len(add), 100) {
-			snapshotID, err = client.AddTracksToPlaylist(id, add[rng.Start:rng.End]...)
-			if err != nil {
-				return fmt.Errorf("AddTracksToPlaylist: %w", err)
+		for i, rng := range batches(len(new), 100) {
+			if i == 0 {
+				err = client.ReplacePlaylistTracks(id, new[rng.Start:rng.End]...)
+			} else {
+				snapshotID, err = client.AddTracksToPlaylist(id, new[rng.Start:rng.End]...)
 			}
-		}
-		for _, rng := range batches(len(sub), 100) {
-			snapshotID, err = client.RemoveTracksFromPlaylist(id, sub[rng.Start:rng.End]...)
+
 			if err != nil {
-				return fmt.Errorf("AddTracksToPlaylist: %w", err)
+				return fmt.Errorf("update playlist tracks: %w", err)
 			}
 		}
 
-		d.Set("snapshot_id", snapshotID)
+		if snapshotID != "" {
+			d.Set("snapshot_id", snapshotID)
+		}
 	}
 
 	return nil

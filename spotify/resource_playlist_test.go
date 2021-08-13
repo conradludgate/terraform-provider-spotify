@@ -143,31 +143,10 @@ func TestSpotify_Resource_Playlist(t *testing.T) {
 						).Once(),
 					)
 
-					httpmock.RegisterResponder("POST", "https://api.spotify.com/v1/playlists/spotify-playlist-1/tracks",
+					httpmock.RegisterResponder("PUT", "https://api.spotify.com/v1/playlists/spotify-playlist-1/tracks?uris=spotify:track:track-1,spotify:track:track-3",
 						RespondWith(
 							JSON(object{"snapshot_id": "snapshot2"}),
 							VerifyBearer(accessToken),
-							VerifyJSONBody(object{
-								"uris": array{
-									"spotify:track:track-3",
-								},
-							}),
-						).Once(),
-					)
-
-					httpmock.RegisterResponder("DELETE", "https://api.spotify.com/v1/playlists/spotify-playlist-1/tracks",
-						RespondWith(
-							JSON(object{"snapshot_id": "snapshot3"}),
-							VerifyBearer(accessToken),
-							VerifyJSONBody(
-								object{
-									"tracks": array{
-										object{
-											"uri": "spotify:track:track-2",
-										},
-									},
-								},
-							),
 						).Once(),
 					)
 
