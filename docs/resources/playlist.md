@@ -40,7 +40,7 @@ data "spotify_track" "snowblind" {
 ### Required
 
 - **name** (String) The name of the resulting playlist
-- **tracks** (Set of String) A set of tracks for the playlist to contain
+- **tracks** (List of String) A set of tracks for the playlist to contain
 
 ### Optional
 
