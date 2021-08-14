@@ -41,6 +41,6 @@ func Provider() *schema.Provider {
 			"spotify_search_track": dataSourceSearchTrack(),
 			"spotify_track":        dataSourceTrack(),
 		},
-		ConfigureFunc: ClientConfigurer,
+		ConfigureContextFunc: ClientConfigurer,
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/conradludgate/spotify/v2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -39,7 +40,7 @@ func dataSourceSearchTrack() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Read: dataSourceSearchTrackRead,
+		ReadContext: dataSourceSearchTrackRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -90,7 +91,7 @@ func addSearchTerm(queries []string, key, field string) []string {
 	return append(queries, fmt.Sprintf("%s:%s", key, field))
 }
 
-func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceSearchTrackRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*spotify.Client)
 
 	var queries []string
@@ -101,10 +102,10 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 
 	limit := d.Get("limit").(int)
 
-	results, err := client.Search(context.Background(), strings.Join(queries, " "), spotify.SearchTypeTrack, spotify.Limit(limit))
+	results, err := client.Search(ctx, strings.Join(queries, " "), spotify.SearchTypeTrack, spotify.Limit(limit))
 
 	if err != nil {
-		return fmt.Errorf("could not perform search [%v]: %w", queries, err)
+		return diag.Errorf("could not perform search [%v]: %s", queries, err.Error())
 	}
 
 	var tracks []interface{}

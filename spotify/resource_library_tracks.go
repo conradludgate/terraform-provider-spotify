@@ -2,18 +2,18 @@ package spotify
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/conradludgate/spotify/v2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceLibraryTracks() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLibraryTracksCreate,
-		Read:   resourceLibraryTracksRead,
-		Update: resourceLibraryTracksUpdate,
-		Delete: resourceLibraryTracksDelete,
+		CreateContext: resourceLibraryTracksCreate,
+		ReadContext:   resourceLibraryTracksRead,
+		UpdateContext: resourceLibraryTracksUpdate,
+		DeleteContext: resourceLibraryTracksDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -30,15 +30,14 @@ func resourceLibraryTracks() *schema.Resource {
 	}
 }
 
-func resourceLibraryTracksCreate(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryTracksCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*spotify.Client)
-	ctx := context.Background()
 
 	trackIDs := spotifyIdsInterface(d.Get("tracks").(*schema.Set).List())
 
 	for _, rng := range batches(len(trackIDs), 100) {
 		if err := client.AddTracksToLibrary(ctx, trackIDs[rng.Start:rng.End]...); err != nil {
-			return fmt.Errorf("AddTracksToLibrary: %w", err)
+			return diag.Errorf("AddTracksToLibrary: %s", err.Error())
 		}
 	}
 
@@ -47,15 +46,14 @@ func resourceLibraryTracksCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceLibraryTracksRead(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryTracksRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*spotify.Client)
-	ctx := context.Background()
 
 	trackIDs := schema.NewSet(schema.HashString, nil)
 
 	tracks, err := client.CurrentUsersTracks(ctx)
 	if err != nil {
-		return fmt.Errorf("CurrentUsersTracks: %w", err)
+		return diag.Errorf("CurrentUsersTracks: %s", err.Error())
 	}
 	for err == nil {
 		for _, track := range tracks.Tracks {
@@ -69,9 +67,8 @@ func resourceLibraryTracksRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceLibraryTracksUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryTracksUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*spotify.Client)
-	ctx := context.Background()
 
 	if d.HasChange("tracks") {
 		old, new := d.GetChange("tracks")
@@ -85,12 +82,12 @@ func resourceLibraryTracksUpdate(d *schema.ResourceData, m interface{}) error {
 
 		for _, rng := range batches(len(add), 100) {
 			if err := client.AddTracksToLibrary(ctx, addTrackIDs[rng.Start:rng.End]...); err != nil {
-				return fmt.Errorf("AddTracksToLibrary: %w", err)
+				return diag.Errorf("AddTracksToLibrary: %s", err.Error())
 			}
 		}
 		for _, rng := range batches(len(sub), 100) {
 			if err := client.RemoveTracksFromLibrary(ctx, subTrackIDs[rng.Start:rng.End]...); err != nil {
-				return fmt.Errorf("AddTracksToLibrary: %w", err)
+				return diag.Errorf("AddTracksToLibrary: %s", err.Error())
 			}
 		}
 	}
@@ -98,6 +95,6 @@ func resourceLibraryTracksUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceLibraryTracksDelete(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryTracksDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	return nil
 }

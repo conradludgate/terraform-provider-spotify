@@ -2,18 +2,18 @@ package spotify
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/conradludgate/spotify/v2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourcePlaylist() *schema.Resource {
 	return &schema.Resource{
-		Create: resourcePlaylistCreate,
-		Read:   resourcePlaylistRead,
-		Update: resourcePlaylistUpdate,
-		Delete: resourcePlaylistDelete,
+		CreateContext: resourcePlaylistCreate,
+		ReadContext:   resourcePlaylistRead,
+		UpdateContext: resourcePlaylistUpdate,
+		DeleteContext: resourcePlaylistDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -51,13 +51,12 @@ func resourcePlaylist() *schema.Resource {
 	}
 }
 
-func resourcePlaylistCreate(d *schema.ResourceData, m interface{}) error {
+func resourcePlaylistCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*spotify.Client)
-	ctx := context.Background()
 
 	user, err := client.CurrentUser(ctx)
 	if err != nil {
-		return fmt.Errorf("GetCurrentUser: %w", err)
+		return diag.Errorf("GetCurrentUser: %s", err.Error())
 	}
 
 	userID := string(user.ID)
@@ -67,7 +66,7 @@ func resourcePlaylistCreate(d *schema.ResourceData, m interface{}) error {
 
 	playlist, err := client.CreatePlaylistForUser(ctx, userID, name, description, public)
 	if err != nil {
-		return fmt.Errorf("CreatePlaylist: %w", err)
+		return diag.Errorf("CreatePlaylist: %s", err.Error())
 	}
 
 	d.SetId(string(playlist.ID))
@@ -79,7 +78,7 @@ func resourcePlaylistCreate(d *schema.ResourceData, m interface{}) error {
 		var err error
 		snapshotID, err = client.AddTracksToPlaylist(ctx, playlist.ID, trackIDs[rng.Start:rng.End]...)
 		if err != nil {
-			return fmt.Errorf("AddTracksToPlaylist: %w", err)
+			return diag.Errorf("AddTracksToPlaylist: %s", err.Error())
 		}
 	}
 
@@ -88,15 +87,14 @@ func resourcePlaylistCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourcePlaylistRead(d *schema.ResourceData, m interface{}) error {
+func resourcePlaylistRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*spotify.Client)
-	ctx := context.Background()
 
 	playlistID := spotify.ID(d.Id())
 	playlist, err := client.GetPlaylist(ctx, playlistID)
 
 	if err != nil {
-		return fmt.Errorf("GetPlaylist: %w", err)
+		return diag.Errorf("GetPlaylist: %s", err.Error())
 	}
 
 	d.Set("name", playlist.Name)
@@ -108,7 +106,7 @@ func resourcePlaylistRead(d *schema.ResourceData, m interface{}) error {
 
 	tracks, err := client.GetPlaylistTracks(ctx, playlistID)
 	if err != nil {
-		return fmt.Errorf("GetPlaylistTracks: %w", err)
+		return diag.Errorf("GetPlaylistTracks: %s", err.Error())
 	}
 	for err == nil {
 		for _, track := range tracks.Tracks {
@@ -122,9 +120,8 @@ func resourcePlaylistRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourcePlaylistUpdate(d *schema.ResourceData, m interface{}) error {
+func resourcePlaylistUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*spotify.Client)
-	ctx := context.Background()
 
 	id := spotify.ID(d.Id())
 	if d.HasChanges("name", "description", "public") {
@@ -137,7 +134,7 @@ func resourcePlaylistUpdate(d *schema.ResourceData, m interface{}) error {
 		)
 
 		if err != nil {
-			return fmt.Errorf("ChangePlaylist: %w", err)
+			return diag.Errorf("ChangePlaylist: %s", err.Error())
 		}
 	}
 
@@ -154,7 +151,7 @@ func resourcePlaylistUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 
 			if err != nil {
-				return fmt.Errorf("update playlist tracks: %w", err)
+				return diag.Errorf("update playlist tracks: %s", err.Error())
 			}
 		}
 
@@ -166,6 +163,6 @@ func resourcePlaylistUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourcePlaylistDelete(d *schema.ResourceData, m interface{}) error {
+func resourcePlaylistDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	return nil
 }

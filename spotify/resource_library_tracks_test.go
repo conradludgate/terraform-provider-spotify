@@ -55,15 +55,15 @@ func TestSpotify_Resource_Library(t *testing.T) {
 				},
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					provider "spotify" {
-						api_key = "some-api-key"
+						api_key = "%s"
 					}
 
 					resource "spotify_library" "my_library" {
 						tracks = ["track-1", "track-3"]
 					}
-				`,
+				`, apiKey),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("spotify_library.my_library", "id", "library"),
 					resource.TestCheckResourceAttr("spotify_library.my_library", "tracks.#", "2"),

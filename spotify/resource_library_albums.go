@@ -2,18 +2,18 @@ package spotify
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/conradludgate/spotify/v2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceLibraryAlbums() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLibraryAlbumsCreate,
-		Read:   resourceLibraryAlbumsRead,
-		Update: resourceLibraryAlbumsUpdate,
-		Delete: resourceLibraryAlbumsDelete,
+		CreateContext: resourceLibraryAlbumsCreate,
+		ReadContext:   resourceLibraryAlbumsRead,
+		UpdateContext: resourceLibraryAlbumsUpdate,
+		DeleteContext: resourceLibraryAlbumsDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -24,21 +24,20 @@ func resourceLibraryAlbums() *schema.Resource {
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
-				Description: "The list of album IDs to save to your 'liked albums'. *Note, if used incorrectly you may unlike all of your albums - use with caution*",
+				Description: "The list of track IDs to save to your 'liked albums'. *Note, if used incorrectly you may unlike all of your albums - use with caution*",
 			},
 		},
 	}
 }
 
-func resourceLibraryAlbumsCreate(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryAlbumsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*spotify.Client)
-	ctx := context.Background()
 
-	trackIDs := spotifyIdsInterface(d.Get("tracks").(*schema.Set).List())
+	trackIDs := spotifyIdsInterface(d.Get("albums").(*schema.Set).List())
 
 	for _, rng := range batches(len(trackIDs), 100) {
-		if err := client.AddTracksToLibrary(ctx, trackIDs[rng.Start:rng.End]...); err != nil {
-			return fmt.Errorf("AddTracksToLibrary: %w", err)
+		if err := client.AddAlbumsToLibrary(ctx, trackIDs[rng.Start:rng.End]...); err != nil {
+			return diag.Errorf("AddAlbumsToLibrary: %s", err.Error())
 		}
 	}
 
@@ -47,34 +46,32 @@ func resourceLibraryAlbumsCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceLibraryAlbumsRead(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryAlbumsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*spotify.Client)
-	ctx := context.Background()
 
 	trackIDs := schema.NewSet(schema.HashString, nil)
 
-	tracks, err := client.CurrentUsersTracks(ctx)
+	Albums, err := client.CurrentUsersAlbums(ctx)
 	if err != nil {
-		return fmt.Errorf("CurrentUsersTracks: %w", err)
+		return diag.Errorf("CurrentUsersAlbums: %s", err.Error())
 	}
 	for err == nil {
-		for _, track := range tracks.Tracks {
+		for _, track := range Albums.Albums {
 			trackIDs.Add(string(track.ID))
 		}
-		err = client.NextPage(ctx, tracks)
+		err = client.NextPage(ctx, Albums)
 	}
 
-	d.Set("tracks", trackIDs)
+	d.Set("albums", trackIDs)
 
 	return nil
 }
 
-func resourceLibraryAlbumsUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryAlbumsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*spotify.Client)
-	ctx := context.Background()
 
-	if d.HasChange("tracks") {
-		old, new := d.GetChange("tracks")
+	if d.HasChange("albums") {
+		old, new := d.GetChange("albums")
 		oldSet := old.(*schema.Set)
 		newSet := new.(*schema.Set)
 		add := newSet.Difference(oldSet).List()
@@ -84,13 +81,13 @@ func resourceLibraryAlbumsUpdate(d *schema.ResourceData, m interface{}) error {
 		subTrackIDs := spotifyIdsInterface(sub)
 
 		for _, rng := range batches(len(add), 100) {
-			if err := client.AddTracksToLibrary(ctx, addTrackIDs[rng.Start:rng.End]...); err != nil {
-				return fmt.Errorf("AddTracksToLibrary: %w", err)
+			if err := client.AddAlbumsToLibrary(ctx, addTrackIDs[rng.Start:rng.End]...); err != nil {
+				return diag.Errorf("AddAlbumsToLibrary: %s", err.Error())
 			}
 		}
 		for _, rng := range batches(len(sub), 100) {
-			if err := client.RemoveTracksFromLibrary(ctx, subTrackIDs[rng.Start:rng.End]...); err != nil {
-				return fmt.Errorf("AddTracksToLibrary: %w", err)
+			if err := client.RemoveAlbumsFromLibrary(ctx, subTrackIDs[rng.Start:rng.End]...); err != nil {
+				return diag.Errorf("AddAlbumsToLibrary: %s", err.Error())
 			}
 		}
 	}
@@ -98,6 +95,6 @@ func resourceLibraryAlbumsUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceLibraryAlbumsDelete(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryAlbumsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	return nil
 }
