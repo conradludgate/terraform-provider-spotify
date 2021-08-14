@@ -33,8 +33,9 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"spotify_playlist": resourcePlaylist(),
-			"spotify_library":  resourceLibrary(),
+			"spotify_playlist":       resourcePlaylist(),
+			"spotify_library":        resourceLibraryTracks(),
+			"spotify_library_albums": resourceLibraryAlbums(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"spotify_search_track": dataSourceSearchTrack(),

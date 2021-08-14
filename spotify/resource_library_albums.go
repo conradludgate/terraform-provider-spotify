@@ -8,29 +8,29 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceLibraryTracks() *schema.Resource {
+func resourceLibraryAlbums() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLibraryTracksCreate,
-		Read:   resourceLibraryTracksRead,
-		Update: resourceLibraryTracksUpdate,
-		Delete: resourceLibraryTracksDelete,
+		Create: resourceLibraryAlbumsCreate,
+		Read:   resourceLibraryAlbumsRead,
+		Update: resourceLibraryAlbumsUpdate,
+		Delete: resourceLibraryAlbumsDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
-			"tracks": {
+			"albums": {
 				Type:        schema.TypeSet,
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
-				Description: "The list of track IDs to save to your 'liked tracks'. *Note, if used incorrectly you may unlike all of your tracks - use with caution*",
+				Description: "The list of album IDs to save to your 'liked albums'. *Note, if used incorrectly you may unlike all of your albums - use with caution*",
 			},
 		},
 	}
 }
 
-func resourceLibraryTracksCreate(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryAlbumsCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
 	ctx := context.Background()
 
@@ -47,7 +47,7 @@ func resourceLibraryTracksCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceLibraryTracksRead(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryAlbumsRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
 	ctx := context.Background()
 
@@ -69,7 +69,7 @@ func resourceLibraryTracksRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceLibraryTracksUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryAlbumsUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
 	ctx := context.Background()
 
@@ -98,6 +98,6 @@ func resourceLibraryTracksUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceLibraryTracksDelete(d *schema.ResourceData, m interface{}) error {
+func resourceLibraryAlbumsDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }

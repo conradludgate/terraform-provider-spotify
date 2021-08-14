@@ -1,10 +1,11 @@
 package spotify
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/conradludgate/spotify/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zmb3/spotify"
 )
 
 func resourcePlaylist() *schema.Resource {
@@ -52,8 +53,9 @@ func resourcePlaylist() *schema.Resource {
 
 func resourcePlaylistCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
+	ctx := context.Background()
 
-	user, err := client.CurrentUser()
+	user, err := client.CurrentUser(ctx)
 	if err != nil {
 		return fmt.Errorf("GetCurrentUser: %w", err)
 	}
@@ -63,7 +65,7 @@ func resourcePlaylistCreate(d *schema.ResourceData, m interface{}) error {
 	description := d.Get("description").(string)
 	public := d.Get("public").(bool)
 
-	playlist, err := client.CreatePlaylistForUser(userID, name, description, public)
+	playlist, err := client.CreatePlaylistForUser(ctx, userID, name, description, public)
 	if err != nil {
 		return fmt.Errorf("CreatePlaylist: %w", err)
 	}
@@ -75,7 +77,7 @@ func resourcePlaylistCreate(d *schema.ResourceData, m interface{}) error {
 	snapshotID := playlist.SnapshotID
 	for _, rng := range batches(len(trackIDs), 100) {
 		var err error
-		snapshotID, err = client.AddTracksToPlaylist(playlist.ID, trackIDs[rng.Start:rng.End]...)
+		snapshotID, err = client.AddTracksToPlaylist(ctx, playlist.ID, trackIDs[rng.Start:rng.End]...)
 		if err != nil {
 			return fmt.Errorf("AddTracksToPlaylist: %w", err)
 		}
@@ -88,9 +90,10 @@ func resourcePlaylistCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourcePlaylistRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
+	ctx := context.Background()
 
 	playlistID := spotify.ID(d.Id())
-	playlist, err := client.GetPlaylist(playlistID)
+	playlist, err := client.GetPlaylist(ctx, playlistID)
 
 	if err != nil {
 		return fmt.Errorf("GetPlaylist: %w", err)
@@ -103,7 +106,7 @@ func resourcePlaylistRead(d *schema.ResourceData, m interface{}) error {
 
 	trackIDs := schema.NewSet(schema.HashString, nil)
 
-	tracks, err := client.GetPlaylistTracks(playlistID)
+	tracks, err := client.GetPlaylistTracks(ctx, playlistID)
 	if err != nil {
 		return fmt.Errorf("GetPlaylistTracks: %w", err)
 	}
@@ -111,7 +114,7 @@ func resourcePlaylistRead(d *schema.ResourceData, m interface{}) error {
 		for _, track := range tracks.Tracks {
 			trackIDs.Add(string(track.Track.ID))
 		}
-		err = client.NextPage(tracks)
+		err = client.NextPage(ctx, tracks)
 	}
 
 	d.Set("tracks", trackIDs)
@@ -121,10 +124,12 @@ func resourcePlaylistRead(d *schema.ResourceData, m interface{}) error {
 
 func resourcePlaylistUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*spotify.Client)
+	ctx := context.Background()
 
 	id := spotify.ID(d.Id())
 	if d.HasChanges("name", "description", "public") {
 		err := client.ChangePlaylistNameAccessAndDescription(
+			ctx,
 			id,
 			d.Get("name").(string),
 			d.Get("description").(string),
@@ -143,9 +148,9 @@ func resourcePlaylistUpdate(d *schema.ResourceData, m interface{}) error {
 		var snapshotID string
 		for i, rng := range batches(len(new), 100) {
 			if i == 0 {
-				err = client.ReplacePlaylistTracks(id, new[rng.Start:rng.End]...)
+				err = client.ReplacePlaylistTracks(ctx, id, new[rng.Start:rng.End]...)
 			} else {
-				snapshotID, err = client.AddTracksToPlaylist(id, new[rng.Start:rng.End]...)
+				snapshotID, err = client.AddTracksToPlaylist(ctx, id, new[rng.Start:rng.End]...)
 			}
 
 			if err != nil {

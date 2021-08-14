@@ -1,12 +1,13 @@
 package spotify
 
 import (
+	"context"
 	"errors"
 	"net/url"
 	"strings"
 
+	"github.com/conradludgate/spotify/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zmb3/spotify"
 )
 
 func dataSourceTrack() *schema.Resource {
@@ -63,7 +64,7 @@ func dataSourceTrackRead(d *schema.ResourceData, m interface{}) error {
 		id = spotify.ID(d.Get("spotify_id").(string))
 	}
 
-	track, err := client.GetTrack(id)
+	track, err := client.GetTrack(context.Background(), id)
 	if err != nil {
 		return err
 	}

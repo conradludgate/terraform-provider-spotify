@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"path"
 
+	"github.com/conradludgate/spotify/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zmb3/spotify"
 	"golang.org/x/oauth2"
 )
 
@@ -29,11 +29,12 @@ func ClientConfigurer(d *schema.ResourceData) (interface{}, error) {
 		APIKey:   d.Get("api_key").(string),
 	}
 
-	client := spotify.NewClient(&http.Client{
-		Transport: transport,
-	})
-
-	client.AutoRetry = true
+	client := spotify.New(
+		spotify.WithHTTPClient(&http.Client{
+			Transport: transport,
+		}),
+		spotify.WithRetry(true),
+	)
 
 	return &client, nil
 }
