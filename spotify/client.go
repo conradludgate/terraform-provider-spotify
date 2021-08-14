@@ -1,6 +1,7 @@
 package spotify
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,15 +11,16 @@ import (
 	"path"
 
 	"github.com/conradludgate/spotify/v2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/oauth2"
 )
 
 // ClientConfigurer for spotify API access
-func ClientConfigurer(d *schema.ResourceData) (interface{}, error) {
+func ClientConfigurer(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	server, err := url.Parse(d.Get("auth_server").(string))
 	if err != nil {
-		return nil, fmt.Errorf("auth_server was not a valid url: %w", err)
+		return nil, diag.Errorf("auth_server was not a valid url: %s", err.Error())
 	}
 	server.Path = path.Join(server.Path, "api/v1/token")
 	server.Path = path.Join(server.Path, d.Get("token_id").(string))
@@ -36,7 +38,7 @@ func ClientConfigurer(d *schema.ResourceData) (interface{}, error) {
 		spotify.WithRetry(true),
 	)
 
-	return &client, nil
+	return client, nil
 }
 
 type transport struct {
