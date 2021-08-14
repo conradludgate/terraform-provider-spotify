@@ -1,13 +1,14 @@
 package spotify
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/conradludgate/spotify/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zmb3/spotify"
 )
 
 func dataSourceSearchTrack() *schema.Resource {
@@ -100,9 +101,7 @@ func dataSourceSearchTrackRead(d *schema.ResourceData, m interface{}) error {
 
 	limit := d.Get("limit").(int)
 
-	results, err := client.SearchOpt(strings.Join(queries, " "), spotify.SearchTypeTrack, &spotify.Options{
-		Limit: &limit,
-	})
+	results, err := client.Search(context.Background(), strings.Join(queries, " "), spotify.SearchTypeTrack, spotify.Limit(limit))
 
 	if err != nil {
 		return fmt.Errorf("could not perform search [%v]: %w", queries, err)
