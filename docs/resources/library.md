@@ -35,7 +35,7 @@ data "spotify_track" "snowblind" {
 
 ### Required
 
-- **tracks** (Set of String)
+- **tracks** (Set of String) The list of track IDs to save to your 'liked tracks'. *Note, if used incorrectly you may unlike all of your tracks - use with caution*
 
 ### Optional
 

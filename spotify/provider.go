@@ -40,6 +40,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"spotify_search_track": dataSourceSearchTrack(),
 			"spotify_track":        dataSourceTrack(),
+			"spotify_album":        dataSourceAlbum(),
 		},
 		ConfigureContextFunc: ClientConfigurer,
 	}
