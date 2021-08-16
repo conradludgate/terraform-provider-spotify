@@ -6,9 +6,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/conradludgate/spotify/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/zmb3/spotify/v2"
 )
 
 func dataSourceTrack() *schema.Resource {

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	spotifyApi "github.com/conradludgate/spotify/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/jarcoal/httpmock"
+	spotifyApi "github.com/zmb3/spotify/v2"
 )
 
 func TestSpotify_Resource_Playlist(t *testing.T) {
@@ -64,9 +64,10 @@ func TestSpotify_Resource_Playlist(t *testing.T) {
 							}),
 							VerifyBearer(accessToken),
 							VerifyJSONBody(object{
-								"name":        "My Playlist",
-								"description": "A test playlist",
-								"public":      true,
+								"name":          "My Playlist",
+								"description":   "A test playlist",
+								"public":        true,
+								"collaborative": false,
 							}),
 						).Once(),
 					)
@@ -168,6 +169,13 @@ func TestSpotify_Resource_Playlist(t *testing.T) {
 					httpmock.RegisterResponder("GET", "https://api.spotify.com/v1/playlists/spotify-playlist-1/tracks",
 						RespondWith(
 							JSON(playlistTrackPage("track-1", "track-3")),
+							VerifyBearer(accessToken),
+						),
+					)
+
+					httpmock.RegisterResponder("DELETE", "https://api.spotify.com/v1/playlists/spotify-playlist-1/followers",
+						RespondWith(
+							JSON(nil),
 							VerifyBearer(accessToken),
 						),
 					)

@@ -3,9 +3,9 @@ package spotify
 import (
 	"context"
 
-	"github.com/conradludgate/spotify/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/zmb3/spotify/v2"
 )
 
 func resourcePlaylist() *schema.Resource {
@@ -64,7 +64,7 @@ func resourcePlaylistCreate(ctx context.Context, d *schema.ResourceData, m inter
 	description := d.Get("description").(string)
 	public := d.Get("public").(bool)
 
-	playlist, err := client.CreatePlaylistForUser(ctx, userID, name, description, public)
+	playlist, err := client.CreatePlaylistForUser(ctx, userID, name, description, public, false)
 	if err != nil {
 		return diag.Errorf("CreatePlaylist: %s", err.Error())
 	}
@@ -164,5 +164,12 @@ func resourcePlaylistUpdate(ctx context.Context, d *schema.ResourceData, m inter
 }
 
 func resourcePlaylistDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*spotify.Client)
+
+	id := spotify.ID(d.Id())
+	if err := client.UnfollowPlaylist(ctx, id); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
