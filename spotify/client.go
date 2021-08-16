@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/conradludgate/spotify/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/zmb3/spotify/v2"
 	"golang.org/x/oauth2"
 )
 
@@ -31,12 +31,12 @@ func ClientConfigurer(ctx context.Context, d *schema.ResourceData) (interface{},
 		APIKey:   d.Get("api_key").(string),
 	}
 
-	client := spotify.New(
-		spotify.WithHTTPClient(&http.Client{
-			Transport: transport,
-		}),
-		spotify.WithRetry(true),
-	)
+	if err := transport.getToken(ctx); err != nil {
+		return nil, diag.FromErr(err)
+	}
+
+	httpClient := &http.Client{Transport: transport}
+	client := spotify.New(httpClient, spotify.WithRetry(true))
 
 	return client, nil
 }
@@ -51,7 +51,7 @@ type transport struct {
 
 func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if !t.token.Valid() {
-		if err := t.getToken(); err != nil {
+		if err := t.getToken(req.Context()); err != nil {
 			return nil, err
 		}
 	}
@@ -68,8 +68,8 @@ func (t *transport) base() http.RoundTripper {
 	return http.DefaultTransport
 }
 
-func (t *transport) getToken() error {
-	req, err := http.NewRequest("POST", t.Endpoint, nil)
+func (t *transport) getToken(ctx context.Context) error {
+	req, err := http.NewRequestWithContext(ctx, "POST", t.Endpoint, nil)
 	if err != nil {
 		return err
 	}

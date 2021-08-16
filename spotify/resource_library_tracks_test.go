@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	spotifyApi "github.com/conradludgate/spotify/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/jarcoal/httpmock"
+	spotifyApi "github.com/zmb3/spotify/v2"
 )
 
 func TestSpotify_Resource_Library(t *testing.T) {

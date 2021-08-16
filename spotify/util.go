@@ -1,6 +1,6 @@
 package spotify
 
-import "github.com/conradludgate/spotify/v2"
+import "github.com/zmb3/spotify/v2"
 
 type Range struct {
 	Start int
