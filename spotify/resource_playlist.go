@@ -102,15 +102,15 @@ func resourcePlaylistRead(ctx context.Context, d *schema.ResourceData, m interfa
 	d.Set("public", playlist.IsPublic)
 	d.Set("snapshot_id", playlist.SnapshotID)
 
-	trackIDs := schema.NewSet(schema.HashString, nil)
-
 	tracks, err := client.GetPlaylistTracks(ctx, playlistID)
 	if err != nil {
 		return diag.Errorf("GetPlaylistTracks: %s", err.Error())
 	}
+
+	trackIDs := make([]string, 0, tracks.Total)
 	for err == nil {
 		for _, track := range tracks.Tracks {
-			trackIDs.Add(string(track.Track.ID))
+			trackIDs = append(trackIDs, string(track.Track.ID))
 		}
 		err = client.NextPage(ctx, tracks)
 	}
