@@ -1,12 +1,19 @@
 # terraform-provider-spotify
 
-[![docs](https://img.shields.io/static/v1?label=docs&message=terraform&color=informational&style=for-the-badge)](https://registry.terraform.io/providers/conradludgate/spotify/latest/docs)
+[![docs](https://img.shields.io/static/v1?label=docs&message=terraform&color=informational&style=for-the-badge&logo=terraform)](https://registry.terraform.io/providers/conradludgate/spotify/latest/docs)
+![downloads](https://img.shields.io/badge/dynamic/json?label=downloads&query=%24.data.attributes.downloads&url=https%3A%2F%2Fregistry.terraform.io%2Fv2%2Fproviders%2F1325&style=for-the-badge&color=brightgreen&logo=terraform)
+![latest version](https://img.shields.io/badge/dynamic/json?label=version&query=%24.data[(%40.length-1)].attributes.version&url=https%3A%2F%2Fregistry.terraform.io%2Fv2%2Fproviders%2F1325%2Fprovider-versions&style=for-the-badge&color=orange&logo=terraform)
 
 This is a terraform provider for managing your spotify playlists.
 
 Featured tutorial - https://learn.hashicorp.com/tutorials/terraform/spotify-playlist
 
 Featured interview - https://www.hashicorp.com/blog/build-your-summer-spotify-playlist-with-terraform
+
+> I am not affiliated with Hashicorp or Terraform.
+>
+> If you are having trouble with the provider, try updating to the latest version
+> before submitting a bug report
 
 ## Example
 
