@@ -65,13 +65,17 @@ func dataSourceAlbumRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	d.Set("name", album.Name)
+	if err := d.Set("name", album.Name); err != nil {
+		return diag.FromErr(err)
+	}
 
 	artists := make([]interface{}, 0, len(album.Artists))
 	for _, artist := range album.Artists {
 		artists = append(artists, string(artist.ID))
 	}
-	d.Set("artists", artists)
+	if err := d.Set("artists", artists); err != nil {
+		return diag.FromErr(err)
+	}
 	d.SetId(string(album.ID))
 
 	return nil

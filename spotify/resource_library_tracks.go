@@ -62,7 +62,9 @@ func resourceLibraryTracksRead(ctx context.Context, d *schema.ResourceData, m in
 		err = client.NextPage(ctx, tracks)
 	}
 
-	d.Set("tracks", trackIDs)
+	if err := d.Set("tracks", trackIDs); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

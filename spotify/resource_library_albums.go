@@ -62,7 +62,9 @@ func resourceLibraryAlbumsRead(ctx context.Context, d *schema.ResourceData, m in
 		err = client.NextPage(ctx, Albums)
 	}
 
-	d.Set("albums", trackIDs)
+	if err := d.Set("albums", trackIDs); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
