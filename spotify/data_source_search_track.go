@@ -128,7 +128,9 @@ func dataSourceSearchTrackRead(ctx context.Context, d *schema.ResourceData, m in
 		}
 	}
 
-	d.Set("tracks", tracks)
+	if err := d.Set("tracks", tracks); err != nil {
+		return diag.FromErr(err)
+	}
 
 	// Sets an id in the state
 	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))

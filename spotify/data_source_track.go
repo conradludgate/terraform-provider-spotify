@@ -70,14 +70,20 @@ func dataSourceTrackRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	d.Set("name", track.Name)
-	d.Set("album", string(track.Album.ID))
+	if err := d.Set("name", track.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("album", string(track.Album.ID)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	artists := make([]interface{}, 0, len(track.Artists))
 	for _, artist := range track.Artists {
 		artists = append(artists, string(artist.ID))
 	}
-	d.Set("artists", artists)
+	if err := d.Set("artists", artists); err != nil {
+		return diag.FromErr(err)
+	}
 	d.SetId(string(track.ID))
 
 	return nil

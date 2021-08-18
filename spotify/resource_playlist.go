@@ -82,7 +82,9 @@ func resourcePlaylistCreate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
-	d.Set("snapshot_id", snapshotID)
+	if err := d.Set("snapshot_id", snapshotID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -97,10 +99,18 @@ func resourcePlaylistRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.Errorf("GetPlaylist: %s", err.Error())
 	}
 
-	d.Set("name", playlist.Name)
-	d.Set("description", playlist.Description)
-	d.Set("public", playlist.IsPublic)
-	d.Set("snapshot_id", playlist.SnapshotID)
+	if err := d.Set("name", playlist.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("description", playlist.Description); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("public", playlist.IsPublic); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("snapshot_id", playlist.SnapshotID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	tracks, err := client.GetPlaylistTracks(ctx, playlistID)
 	if err != nil {
@@ -115,7 +125,9 @@ func resourcePlaylistRead(ctx context.Context, d *schema.ResourceData, m interfa
 		err = client.NextPage(ctx, tracks)
 	}
 
-	d.Set("tracks", trackIDs)
+	if err := d.Set("tracks", trackIDs); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -156,7 +168,9 @@ func resourcePlaylistUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 
 		if snapshotID != "" {
-			d.Set("snapshot_id", snapshotID)
+			if err := d.Set("snapshot_id", snapshotID); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
