@@ -23,5 +23,6 @@ description: |-
 
 - **artists** (List of String) The spotify IDs of the artists
 - **name** (String) The Name of the album
+- **tracks** (List of String) The spotify IDs of the tracks
 
 
