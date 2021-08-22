@@ -24,5 +24,4 @@ description: |-
 - **artists** (List of String) The spotify IDs of the artists
 - **name** (String) The Name of the album
 - **tracks** (List of String) The spotify IDs of the tracks
-
-
+- **track_names** (List of String) The names of the tracks
