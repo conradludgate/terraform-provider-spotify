@@ -12,7 +12,7 @@ description: |-
 ## Example Usage
 
 ```terraform
-data "spotify_artist" "overdrive" {
+data "spotify_artist" "gunship" {
   url = "https://open.spotify.com/artist/3PALZKWkpwjRvBsRmhlVSS"
 
   ## Computed
