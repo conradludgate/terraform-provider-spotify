@@ -7,6 +7,6 @@ resource "spotify_playlist" "ariana_grande" {
 }
 
 data "spotify_search_track" "ariana_grande" {
-  artists = ["Ariana Grande"]
+  artist = "Ariana Grande"
   limit = 10
 }
