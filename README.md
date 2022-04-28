@@ -27,7 +27,6 @@ resource "spotify_playlist" "playlist" {
   tracks = flatten([
     data.spotify_track.overkill.id,
     data.spotify_track.blackwater.id,
-    data.spotify_track.overkill.id,
     data.spotify_search_track.search.tracks[*].id,
   ])
 }
