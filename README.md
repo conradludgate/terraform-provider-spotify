@@ -91,9 +91,9 @@ Configure the terraform provider like so
 ```tf
 provider "spotify" {
   auth_server = "https://oauth2.conrad.cafe"
-  api_key = var.spotify_api_key
-  username = "your username"
-  token_id = "your token id"
+  api_key     = var.spotify_api_key
+  username    = "your username"
+  token_id    = "your token id"
 }
 
 variable "spotify_api_key" {
