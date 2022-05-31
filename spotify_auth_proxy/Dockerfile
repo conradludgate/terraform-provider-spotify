@@ -7,5 +7,11 @@ COPY main.go .
 RUN CGO_ENABLED=0 go build -o /bin/spotify_auth_proxy
 
 FROM alpine:latest
-COPY --from=build /bin/spotify_auth_proxy /bin/spotify_auth_proxy
-ENTRYPOINT ["/bin/spotify_auth_proxy"]
+
+WORKDIR /home/spotify_auth_proxy
+RUN addgroup -S spotify && \
+    adduser -S spotify_auth_proxy -G spotify
+
+USER spotify_auth_proxy
+COPY --from=build /bin/spotify_auth_proxy .local/bin/spotify_auth_proxy
+ENTRYPOINT [".local/bin/spotify_auth_proxy"]
