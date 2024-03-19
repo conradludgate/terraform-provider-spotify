@@ -80,6 +80,7 @@ func main() {
 	http.HandleFunc("/authorize", Authorize)
 	http.HandleFunc("/api/v1/token/terraform", APIToken)
 	http.HandleFunc("/spotify_callback", SpotifyCallback)
+	http.HandleFunc("/health", HealthCheck)
 
 	log.Fatal(http.ListenAndServe(":27228", nil))
 }
@@ -180,6 +181,28 @@ func SpotifyCallback(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintln(w, "Authorization successful")
 	fmt.Println("Authorization successful")
+}
+
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	status := "healthy"
+
+	response := struct {
+		Status string `json:"status"`
+	}{
+		Status: status,
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, "Error encoding JSON response:", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonResponse)
 }
 
 func randString() string {
