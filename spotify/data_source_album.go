@@ -39,6 +39,18 @@ func dataSourceAlbum() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "The spotify IDs of the artists",
 			},
+			"tracks": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The spotify IDs of the tracks",
+			},
+			"track_names": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "The names of the tracks",
+			},
 		},
 	}
 }
@@ -76,6 +88,23 @@ func dataSourceAlbumRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err := d.Set("artists", artists); err != nil {
 		return diag.FromErr(err)
 	}
+
+	tracks := make([]interface{}, 0, len(album.Tracks.Tracks))
+	for _, track := range album.Tracks.Tracks {
+		tracks = append(tracks, string(track.ID))
+	}
+	if err := d.Set("tracks", tracks); err != nil {
+		return diag.FromErr(err)
+	}
+
+	track_names := make([]interface{}, 0, len(album.Tracks.Tracks))
+	for _, track := range album.Tracks.Tracks {
+		track_names = append(track_names, string(track.Name))
+	}
+	if err := d.Set("track_names", track_names); err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.SetId(string(album.ID))
 
 	return nil
