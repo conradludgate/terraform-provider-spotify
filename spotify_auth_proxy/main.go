@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/caarlos0/env/v6"
 	"golang.org/x/oauth2"
@@ -25,7 +26,7 @@ var (
 	source oauth2.TokenSource
 	envCfg *EnvConfig
 	token  string
-
+	
 	config *oauth2.Config
 )
 
@@ -82,7 +83,18 @@ func main() {
 	http.HandleFunc("/spotify_callback", SpotifyCallback)
 	http.HandleFunc("/health", HealthCheck)
 
-	log.Fatal(http.ListenAndServe(":27228", nil))
+	host := envCfg.BaseURL.Hostname()
+	port := envCfg.BaseURL.Port()
+	if port == "" {
+		port = "80"
+	}
+	listenAddr := host + ":" + port
+	if host == "" || strings.Contains(envCfg.BaseURL.Host, ":") {
+		listenAddr = envCfg.BaseURL.Host // fallback
+	}
+	fmt.Println("Listening on:", listenAddr)
+
+	log.Fatal(http.ListenAndServe(listenAddr, nil))
 }
 
 // APIToken is the endpoint for refreshing API tokens
@@ -121,6 +133,7 @@ func Authorize(w http.ResponseWriter, r *http.Request) {
 	if key != token {
 		fmt.Fprintln(w, "Authorize: you are not authorized to sign in to this platform")
 		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
 	state := randString()
